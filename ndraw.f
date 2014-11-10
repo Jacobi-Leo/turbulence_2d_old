@@ -1,4 +1,4 @@
-c----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
             subroutine draw0(xd,yd,n,xs,ns)
             real,dimension (n)::xd,yd
             real,dimension (ns)::xs
@@ -15,33 +15,33 @@ c----------------------------------------------------------------------------
 
             return
             end 
-c----------------------------------------------------------------------------
+!----------------------------------------------------------------------------
             subroutine draw(xd,yd,vor,n,xs,ys,ns)
             real xd(n),yd(n),vor(n,n),xs(ns),ys(ns)
 
             return
             end
-c------------------------------------
+!------------------------------------
          subroutine plotp2d(xx,yy,dx)
          
          return
          end
-c------------------------------------
+!------------------------------------
          subroutine newpen(nn)
          
          return
          end
-c--------------------------------------------------------------
+!--------------------------------------------------------------
          subroutine plot_vortex(n,iv,jv,nc,ic)
          dimension iv(nc),jv(nc)
 
          return
          end
-C*************************************************
+!*************************************************
          SUBROUTINE MOVESPA(FIN,NN)
          CHARACTER*(*) FIN
          
-C.. 1 FIND LAST NO SPACE CHARACTER NUMBER
+!.. 1 FIND LAST NO SPACE CHARACTER NUMBER
          KL=0
          DO I=NN,1,-1
           IF(FIN(I:I).NE.' ') THEN
@@ -52,7 +52,7 @@ C.. 1 FIND LAST NO SPACE CHARACTER NUMBER
 11       CONTINUE
          IF(KL.LE.1) RETURN
 
-C.. 2 DELETE SPACE FROM NN1 TO 1
+!.. 2 DELETE SPACE FROM NN1 TO 1
          NN1=KL-1
          DO 2 I=NN1,1,-1
           IF(FIN(I:I).EQ.' ') THEN
@@ -66,7 +66,7 @@ C.. 2 DELETE SPACE FROM NN1 TO 1
 
          RETURN
          END
-C ------------
+! ------------
          SUBROUTINE ANG_ABC(XA,YA,XB,YB,XC,YC,ANGLE)
         
          PARAMETER(DPI=2.0*3.14159265)
@@ -90,15 +90,15 @@ C ------------
          IF(S.LT.Z0) ANGLE=DPI-ANGLE
          RETURN
          END
-C -------------------------
-C...AREA COORDINATES AT M
+! -------------------------
+!...AREA COORDINATES AT M
            SUBROUTINE AREAM(X1,Y1,X2,Y2,XM,YM,AR3)
            AR3=((X1-XM)*Y2-(Y1-YM)*X2
      *     -(X1-XM)*YM+(Y1-YM)*XM)*0.5
            RETURN
            END
-C -------------------------
-C...AREA COORDINATES AT M
+! -------------------------
+!...AREA COORDINATES AT M
            SUBROUTINE run_time_msec(ii)
            ier = ii
            RETURN

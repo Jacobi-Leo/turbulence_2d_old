@@ -1,4 +1,4 @@
-C*************************************
+!*************************************
       program spectral_mpi
 
       include 'decay.h'
@@ -23,7 +23,7 @@ C*************************************
       common /timeseq/ rnv,vormax,vorave,gamave,radave,areave,epsave,
      1                 vort,flatness
 
-c  setup MPI environment
+!  setup MPI environment
 
       call mpi_init(ierror)
       call mpi_comm_size(mpi_comm_world,nproc,ierror)
@@ -65,7 +65,7 @@ c  setup MPI environment
           close(1)
       endif
 
-c Broadcast inputs across processors, since just read into id=0.
+! Broadcast inputs across processors, since just read into id=0.
 !      call mpi_bcast(iopath,50,MPI_CHARACTER,0,nallgrp,ierror)
       call mpi_bcast(my,1,MPI_INTEGER,0,nallgrp,ierror)
       call mpi_bcast(iseed_m0,1,MPI_INTEGER,0,nallgrp,ierror)
@@ -79,7 +79,7 @@ c Broadcast inputs across processors, since just read into id=0.
       call mpi_bcast(alpha,1,MPI_REAL,0,nallgrp,ierror)
       call mpi_bcast(new,1,MPI_INTEGER,0,nallgrp,ierror)
       call mpi_bcast(idp,1,MPI_INTEGER,0,nallgrp,ierror)
-c-------------------------------
+!-------------------------------
       mx2=my/2
       mx=my
       mmx2=mx2/nproc
@@ -87,19 +87,21 @@ c-------------------------------
       pi = 4.0 * atan(1.0)
       nek = int(sqrt(2.0)*my/3.0)  
       scale = 1.0/my/mx        
-c---------------------------------
+!---------------------------------
       jj = 1
       jjj = 1
+	  
       iii = 1
       idp1 = idp        
-c----------------------------------
-c... allocate memory...................................................
+!----------------------------------
+!... allocate memory...................................................
 
         allocate (vx(my,mmx2) )
         allocate (vy(my,mmx2) )
         allocate (wz(my,mmx2) )
         allocate (owz(my,mmx2) )
         allocate (kx(my,mmx2) )
+        allocate (ky(my,mmx2) )
         allocate (ky(my,mmx2) )
         allocate (k2(my,mmx2) )
         allocate (k2e(my,mmx2) )
@@ -115,7 +117,7 @@ c... allocate memory...................................................
         allocate (ipy(0:my) )
         allocate (iseed(nproc) )
 
-C***********************************
+!***********************************
        if (id.eq.0) then
 
          write(fin,109) iopath,'info.txt'
@@ -133,13 +135,13 @@ C***********************************
        endif
 109    format(1x,a50,a)
 
-c---Prepare for call mpifft----------
+!---Prepare for call mpifft----------
 
          ipx(0) = 0  
          ipy(0) = 0
 
-c... If the computation is from the initial valve, then at the beginning,
-c    we choose a small time step.
+!... If the computation is from the initial valve, then at the beginning,
+!    we choose a small time step.
         if(new.ne.0) then
           dt = 0.1*dt
           nsteps0 = 0
@@ -148,12 +150,12 @@ c    we choose a small time step.
         dt_h = 0.5*dt
         call wavenumber(kx,ky,k2,k2e,id,0)
 
-C...INITIAL CONDITIONS
-c  new = 1:  random vorticity field with specified spectrum 
-c             vor(k)=u0*k**6/((1+k/ak0)**18)
-c  new = 2:  uniform disstributed vortex:
-c             psi(x,y) = sin(ak0*x)cos(ak0*y),               stream function
-c             vor(x,y) = -ak0*ak0*sin(ak0*x)cos(ak0*y)
+!...INITIAL CONDITIONS
+!  new = 1:  random vorticity field with specified spectrum 
+!             vor(k)=u0*k**6/((1+k/ak0)**18)
+!  new = 2:  uniform disstributed vortex:
+!             psi(x,y) = sin(ak0*x)cos(ak0*y),               stream function
+!             vor(x,y) = -ak0*ak0*sin(ak0*x)cos(ak0*y)
 
       if(new.ne.0) then
       if (new.eq.1) then
@@ -165,12 +167,13 @@ c             vor(x,y) = -ak0*ak0*sin(ak0*x)cos(ak0*y)
         endif
         call mpi_bcast(iseed,nproc,MPI_INTEGER,0,nallgrp,ierror)
         i = iseed(id+1)
-        num =  drand(i)
+        !num =  drand(i)
+		call RANDOM_NUMBER(num)
 
         call gaussian(vx)
         call gaussian(vy)
 
-c... projection:
+!... projection:
          tmp = (kx*real(vx) + ky*real(vy))/k2
          vx = cmplx(real(vx) - kx*tmp, aimag(vx))
          vy = cmplx(real(vy) - ky*tmp, aimag(vy))
@@ -194,12 +197,12 @@ c... projection:
          vy = vy*tmp
          call symmetrize(vx,id)
          call symmetrize(vy,id)
-c... vorticity:
+!... vorticity:
          wz = (0.,1.) * (kx*vy - ky*vx)
          call symmetrize(wz,id)
 
        elseif(new.eq.2) then
-c... uniform distributed vortex: Tayor-Green vortes in two-dimensional:
+!... uniform distributed vortex: Tayor-Green vortes in two-dimensional:
          xk = 2.*pi/float(my)
          do j=1,mmy
             yy = (id*mmy+j-1)*xk
@@ -215,21 +218,20 @@ c... uniform distributed vortex: Tayor-Green vortes in two-dimensional:
                sx1 = -1.0
             endif
             if(sx2*cy.ge.0.1) then
-               sx2 = 1.0
             elseif(sx2*cy.le.-0.1) then
                sx2 = -1.0
             endif
             uxt(i,j)= e0*cmplx(sx1,sx2)
          enddo
          enddo
-C...TRANSFORM BACK TO K-SPACE
+!...TRANSFORM BACK TO K-SPACE
          isign = 1       
          call newfft (wz,uxt, isign,ipx,ipy,wx,wy,id,nallgrp)  
          call symmetrize (wz, id)
          call dealiasing (wz, k2) 
        endif
 
-c--calculating initial spectrum------
+!--calculating initial spectrum------
         tmp= wz*conjg(wz) / k2
         if (id.eq.0)  tmp(:, 1)=0.50*tmp(:, 1)  
         do i=1,nek
@@ -256,15 +258,15 @@ c--calculating initial spectrum------
       call symmetrize (wz, id)
       if(nsteps0.ge.ieout) call pickvor0_input(id)
 
-C...*********** MAIN LOOP *************
+!...*********** MAIN LOOP *************
 
       timer1 = mpi_wtime()
       do istep = 0, nstep
 
         nsteps = nsteps0 + istep
 
-c....If the computation is started from initial value, then the first
-c    10 steps is used small time step
+!....If the computation is started from initial value, then the first
+!    10 steps is used small time step
         if(nsteps.eq.10) then
           dt = 2.0*dt
           dt_h = 0.5*dt
@@ -286,8 +288,8 @@ c    10 steps is used small time step
 
         call wavenumber(kx,ky,k2,k2e,id,1)
 
-c**********************************************************
-C...WRITE ENERGY SPECTRUM
+!**********************************************************
+!...WRITE ENERGY SPECTRUM
          if (mod(nsteps,ieout).eq.0) then
             tmp= wz*conjg(wz) / k2
             if (id.eq.0)  tmp(:, 1)=0.50*tmp(:, 1)  
@@ -311,32 +313,33 @@ C...WRITE ENERGY SPECTRUM
 201      format(1x,'#k',3x,'j=',i3,3x,'nsteps=',i6,3x,'Time=',f10.4,3x,
      +                'Te=',e15.6)
    
-C...STORE VORTICITY TEMPORARILY
+!...STORE VORTICITY TEMPORARILY
          tmp = real(wz)
          tmp1 = aimag(wz)
 
-C...output K-space vorticity if it's time
+!...output K-space vorticity if it's time
          if ( (mod(nsteps,itout).eq.0).and.(istep.ne.0) ) then
              idp1=idp1+1
              call output (wz,idp1,id,nallgrp) 
          endif
 
-C-------------NONLINEAR TERM----------
+!-------------NONLINEAR TERM----------
 
-C...TRANSFER VELOCITY AND VORTICITY TO X-SPACE
+!...TRANSFER VELOCITY AND VORTICITY TO X-SPACE
          vx = (0.0,1.0) * ky * wz / k2
          call symmetrize (vx, id)
          isign= -1      
          call newfft (vx,uxt, isign,ipx,ipy,wx,wy,id,nallgrp) 
          call newfft (wz,wt, isign,ipx,ipy,wx,wy,id,nallgrp) 
 
+
          if(nsteps.eq.ieout) call pickvor0(wt,my,id)
          if(mod(nsteps,ieout).eq.0) then
           call pickvor(wt,my)
          endif
 
-C...Calculate flatness of vorticity.................................
-c..  vor(1): < vor**2 >         vor(2): < vor**4 >
+!...Calculate flatness of vorticity.................................
+!..  vor(1): < vor**2 >         vor(2): < vor**4 >
       if (mod(nsteps,ieout).eq.0) then
             vor(1)=sum( real(wt*scale)**2 + aimag(wt*scale)**2 ) 
             vor(2)=sum( real(wt*scale)**4 + aimag(wt*scale)**4 )
@@ -348,21 +351,21 @@ c..  vor(1): < vor**2 >         vor(2): < vor**4 >
         endif
       endif 
 202   format(18x,'Flatness of voriticity =',e15.6)
-c1.....< ux^2 >: only one componet is computed here .......................
+!1.....< ux^2 >: only one componet is computed here .......................
         if (mod(nsteps,ieout).eq.0) then   
          ekr = 0.5*sum( real(uxt)**2 + aimag(uxt)**2 )
         endif
-c...Find max x-velocity (for CFL condition )--------------------       
+!...Find max x-velocity (for CFL condition )--------------------       
 !         if ( mod(istep-1, ieout).eq.0 ) then
 !              rmax1= maxval (real(uxt)) 
 !              rmax2= maxval (aimag(uxt))
 !              xmax= amax1(rmax1,rmax2) 
 !         endif 
-C...FORM THE PRODUCT V*W IN X-SPACE
+!...FORM THE PRODUCT V*W IN X-SPACE
          uxt=cmplx( real(uxt)*real(wt), aimag(uxt) )
          uxt=cmplx( real(uxt), aimag(uxt)*aimag(wt) )
 
-C...TRANSFORM BACK TO K-SPACE
+!...TRANSFORM BACK TO K-SPACE
          isign = 1       
          call newfft (vx,uxt, isign,ipx,ipy,wx,wy,id,nallgrp)  
          call symmetrize ( vx, id)
@@ -370,17 +373,17 @@ C...TRANSFORM BACK TO K-SPACE
 
          vy = vx * (0.0,-0.50)*kx
 
-c===============================================
-c     now do on y-component of velocity
-c     vort. in x-space is already saved in wt
-c     wz also changed 
+!===============================================
+!     now do on y-component of velocity
+!     vort. in x-space is already saved in wt
+!     wz also changed 
 
          vx=-(0.0,1.0)* kx*cmplx(tmp,tmp1)/k2
 
          isign = -1
          call newfft (vx,uxt, isign,ipx,ipy,wx,wy,id,nallgrp)
 
-c...Find max y-velocity (for CFL condition)-------------------------------
+!...Find max y-velocity (for CFL condition)-------------------------------
 !          if ( mod(istep-1, ieout).eq.0 ) then
 !              rmax1= maxval (real(uxt)) 
 !              rmax2= maxval (aimag(uxt))
@@ -391,8 +394,8 @@ c...Find max y-velocity (for CFL condition)-------------------------------
 !              call mpi_bcast( umax_t, 1, MPI_REAL, 0, nallgrp, ierror) 
 !          endif
 
-c...Find kinetic energy in x-space, E = 0.5 * < u^2 > .............
-c2.....< u^2 > the second component ..................
+!...Find kinetic energy in x-space, E = 0.5 * < u^2 > .............
+!2.....< u^2 > the second component ..................
        if (mod(nsteps,ieout).eq.0) then          
          ekr = ekr + 0.5*sum( real(uxt)**2 + aimag(uxt)**2 )
          call mpi_reduce(ekr,e_tr,1,MPI_REAL,MPI_SUM,0,nallgrp,ier)
@@ -406,7 +409,7 @@ c2.....< u^2 > the second component ..................
          endif                                                  
        endif
 89     format(1x,12e15.6)
-c-------------------------------------------------------
+!-------------------------------------------------------
          uxt=cmplx( real(uxt)*real(wt), aimag(uxt) )
          uxt=cmplx( real(uxt), aimag(uxt)*aimag(wt) )
          
@@ -417,37 +420,37 @@ c-------------------------------------------------------
    
          vy = vy + (0.0,-0.50) * ky * vx
 
-C-Recover vort.,do phase shift dealiasing on x-comp of velo.
+!-Recover vort.,do phase shift dealiasing on x-comp of velo.
          wz = cmplx (tmp, tmp1)
          vx = (0.0,1.0) * ky * wz / k2
 
-C...PHASE SHIFT
+!...PHASE SHIFT
          vx=vx*cmplx(cos(pi/my*(kx+ky)),sin(pi/my*(kx+ky)))
          wz=wz*cmplx(cos(pi/my*(kx+ky)),sin(pi/my*(kx+ky)))
 
          call symmetrize(vx,id)
          call symmetrize(wz,id)
 
-C...TRANSFER VELOCITY AND VORTICITY TO X-SPACE
+!...TRANSFER VELOCITY AND VORTICITY TO X-SPACE
          isign = -1
          call newfft (vx,uxt, isign,ipx,ipy,wx,wy,id,nallgrp) 
          call newfft (wz,wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
 
-C...FORM THE PRODUCT V*W IN X-SPACE
+!...FORM THE PRODUCT V*W IN X-SPACE
          uxt=cmplx( real(uxt)*real(wt), aimag(uxt) )
          uxt=cmplx( real(uxt), aimag(uxt)*aimag(wt) )
         
-C...TRANSFORM TO K-SPACE
+!...TRANSFORM TO K-SPACE
          isign = 1
          call newfft (vx,uxt, isign,ipx,ipy,wx,wy,id,nallgrp) 
-C...PHASE SHIFT
+!...PHASE SHIFT
          vx=vx*cmplx(cos(pi/my*(kx+ky)),-sin(pi/my*(kx+ky)) )
          call symmetrize(vx, id)
 
          vy = vy + vx*(0.0,-0.50)*kx
 
-c--- do phase shift dealiasing for y-comp
-c--- phase-shifted wz in real space already saved in wt
+!--- do phase shift dealiasing for y-comp
+!--- phase-shifted wz in real space already saved in wt
 
          vx=-(0.0,1.0)* kx*cmplx(tmp, tmp1)/k2
 
@@ -469,14 +472,14 @@ c--- phase-shifted wz in real space already saved in wt
 
          vy = vy + vx*(0.0,-0.50)*ky
 
-c-----------END CONVOLUTION PLUS DEALISING-----------
-c-----now, vy = -i k.fft(Vw)
-c...RECOVER VORTICITY
+!-----------END CONVOLUTION PLUS DEALISING-----------
+!-----now, vy = -i k.fft(Vw)
+!...RECOVER VORTICITY
            wz = cmplx( tmp,tmp1)
 
-C...CALCULATE ENSTROPHY FLUX (it must be done HERE)
-c...enstrophy flux is
-c   2 Imag [ w^*(k) k.F(uw) ]  (F(.) means fourier transform)
+!...CALCULATE ENSTROPHY FLUX (it must be done HERE)
+!...enstrophy flux is
+!   2 Imag [ w^*(k) k.F(uw) ]  (F(.) means fourier transform)
          if (mod(nsteps,ieout).eq.0) then
             vx =  2.* (0.0, 1.0)*vy
             kx = real(wz)*aimag(vx) - aimag(wz)*real(vx)
@@ -504,21 +507,21 @@ c   2 Imag [ w^*(k) k.F(uw) ]  (F(.) means fourier transform)
          endif
 821      format(1x,'#k',3x,'i=',i3,3x,'nsteps=',i6,3x,'time=',f10.4) 
 
-C-------------END NONLINEAR TERM----------
+!-------------END NONLINEAR TERM----------
          call dealiasing (vy, k2)
          call symmetrize (vy, id)
 
-C... do CFL condition with umax, h=1./my
-c             if ( (id.eq.0) .and. (mod(istep-1,100).eq.0) ) then
-c                  dt_max=1./ umax_t /float(my)
-cc                  if (dt .ge. (0.50*dt_max) ) then
-c                     dt = 0.5 * dt_max         
-c                     dt_h = 0.5 * dt
-c                     call mpi_bcast(dt,1,MPI_REAL,0,nallgrp,ierror)
-c                     call mpi_bcast(dt_h,1,MPI_REAL,0,nallgrp,ierror)
-c                  endif
-c             endif
-C---If first-step then use modified Euler method
+!... do CFL condition with umax, h=1./my
+!             if ( (id.eq.0) .and. (mod(istep-1,100).eq.0) ) then
+!                  dt_max=1./ umax_t /float(my)
+!c                  if (dt .ge. (0.50*dt_max) ) then
+!                     dt = 0.5 * dt_max         
+!                     dt_h = 0.5 * dt
+!                     call mpi_bcast(dt,1,MPI_REAL,0,nallgrp,ierror)
+!                     call mpi_bcast(dt_h,1,MPI_REAL,0,nallgrp,ierror)
+!                  endif
+!             endif
+!---If first-step then use modified Euler method
          if (istep.eq.0) then
              owz = wz
              wz = sqrt(k2e)*(wz+dt_h*vy)
@@ -528,7 +531,7 @@ C---If first-step then use modified Euler method
              wz = k2e*(owz+dt*vy/sqrt(k2e))
              time=time+dt_h
              call input(owz,0,id,nallgrp)
-C---Adams-banshford--------
+!---Adams-banshford--------
          else
             wz = wz + dt_h * (3.0*vy - k2e * owz)
             wz = wz * k2e
@@ -547,10 +550,10 @@ C---Adams-banshford--------
       stop
       end
 
-c--------------------------------------------
+!--------------------------------------------
 
       subroutine dealiasing(vx,k2)
-C...8/9 rule for dealiasing convolution in FFT
+!...8/9 rule for dealiasing convolution in FFT
 
       include 'decay.h'
       complex, dimension(my, mmx2)::vx
@@ -563,7 +566,7 @@ C...8/9 rule for dealiasing convolution in FFT
       endwhere
       return
       end
-c----------------------------------------------
+!----------------------------------------------
       subroutine wavenumber(kx,ky,k2,k2e,id,kc)
 
       include 'decay.h'
@@ -593,7 +596,7 @@ c----------------------------------------------
       return
       end
 
-c------------------------------------------------
+!------------------------------------------------
       subroutine gaussian (u)
       include 'decay.h'
       complex, dimension(my, mmx2) :: u
@@ -602,10 +605,10 @@ c------------------------------------------------
       u  = (0.0, 0.0)
       do i = 1,my
          do j = 1,mmx2
-c           call RANDOM_NUMBER(t1)
-c           call RANDOM_NUMBER(t2)
-            t1 = drand(0)
-            t2 = drand(0)
+            call RANDOM_NUMBER(t1)
+            call RANDOM_NUMBER(t2)
+            !t1 = drand(0)
+            !t2 = drand(0)
             if (t1.le.1.e-10) t1 = 1.e-10
             if (t2.le.1.e-10) t2 = 1.e-10
             t2 = 2.0*pi*t2
@@ -616,7 +619,7 @@ c           call RANDOM_NUMBER(t2)
       return
       end
 
-c-----------------------------------------------------
+!-----------------------------------------------------
 
       subroutine symmetrize(c,id)
       include 'decay.h'
@@ -639,7 +642,7 @@ c-----------------------------------------------------
 
       return
       end
-c ---------------------------------------------------
+! ---------------------------------------------------
       subroutine outputp (uxt,idp,id,nallgrp)
       include 'decay.h'
       complex,dimension(mx2,mmy)::uxt
@@ -657,7 +660,7 @@ c ---------------------------------------------------
 
       return
       end
-c --------------------------------------------------
+! --------------------------------------------------
       subroutine output (ux,idp,id,nallgrp)
       include 'decay.h'
       complex,dimension(my, mmx2)::ux
@@ -676,7 +679,7 @@ c --------------------------------------------------
 
       return
       end
-c --------------------------------------------------
+! --------------------------------------------------
       subroutine input (ux,idp,id,nallgrp)
 
       include 'decay.h'
@@ -694,7 +697,7 @@ c --------------------------------------------------
 
       return
       end
-c --------------------------------------------------
+! --------------------------------------------------
         subroutine newfft (ux,uxt, isign,ipx,ipy,wx,wy,id,nallgrp)
                
       include 'decay.h'
@@ -710,7 +713,7 @@ c --------------------------------------------------
         integer isign,i, j
 
        if (isign.eq.1) then     
-c-- rc fft in x-dir-------------
+!-- rc fft in x-dir-------------
         do j=1, mmy
            do i=1, mx2
               ux1(2*i-2) = real(uxt (i, j) )
@@ -728,13 +731,13 @@ c-- rc fft in x-dir-------------
         
         call transpose_xtok (uxt, ux, id, nallgrp)
 
-c-- cc fft in y-dir-------------       
+!-- cc fft in y-dir-------------       
         do i=1, mmx2
             uy1=ux(:, i)
             call cdft (my*2, isign, uy1, ipy, wy)
             ux(:, i)= uy1/float(my)
          enddo    
-c^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  
         else if (isign.eq. -1)  then  
          do i=1, mmx2
             uy1=ux(:, i)
@@ -758,9 +761,9 @@ c^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
        return
        end
-c -------------------------------------------------
+! -------------------------------------------------
       subroutine transpose_ktox (ux,uxt,id,nallgrp)
-c     transpose ux to uxt so can do x-dir fft on uxt
+!     transpose ux to uxt so can do x-dir fft on uxt
 
       include 'decay.h'
       complex,dimension(my,mmx2)::ux
@@ -794,11 +797,10 @@ c     transpose ux to uxt so can do x-dir fft on uxt
          enddo
        enddo
 
-c     does (id,id) spot from ux to tmp so can transpose to uxt
+!     does (id,id) spot from ux to tmp so can transpose to uxt
 
        ks = id*mmx2
        js = id*mmy
-       do k = 1,mmx2
          k1 = ks + k
          do j = 1,mmy
             j1 = js + j
@@ -823,9 +825,9 @@ c     does (id,id) spot from ux to tmp so can transpose to uxt
       return
       end
 
-c------------------------------------------------
+!------------------------------------------------
       subroutine transpose_xtok (uxt,ux,id,nallgrp)
-c     transpose uxt to ux so can do y-dir ifft on ux
+!     transpose uxt to ux so can do y-dir ifft on ux
 
       include 'decay.h'
       complex,dimension(my,mmx2)::ux
@@ -860,7 +862,7 @@ c     transpose uxt to ux so can do y-dir ifft on ux
          enddo
        enddo
 
-c     does the (id,id) spot from uxt to tmp so can transpose to ux
+!     does the (id,id) spot from uxt to tmp so can transpose to ux
         ks = id*mmy
         js = id*mmx2
         do k = 1,mmy
@@ -870,7 +872,7 @@ c     does the (id,id) spot from uxt to tmp so can transpose to ux
               tmp( j, k1) = uxt ( j1, k)
            enddo
        enddo
-c---important  Transpose here!!
+!---important  Transpose here!!
        do k = 1,mmx2
          do j = 1,my
             ux( j, k) = tmp( k, j)
