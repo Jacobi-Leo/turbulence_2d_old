@@ -1,4 +1,4 @@
-c--------------------------------------------------------------
+!--------------------------------------------------------------
         subroutine pickvor0(vor,n,idn)
         real,dimension(n,n):: vor
         common /McWillimas/delt,crmax,armax,rmin,rmax,deltmax,epsmax,
@@ -6,35 +6,35 @@ c--------------------------------------------------------------
         character iopath*50,fin*80
         common /iopathc/ iopath
 
-c... ËÑË÷È«¾Ö¼«´óÖµ£¬²¢¾Ý´Ë¸ø³öÐýÎÐµÄ×îÐ¡ÎÐÁ¿¼«Öµ
+!... æœç´¢å…¨å±€æžå¤§å€¼ï¼Œå¹¶æ®æ­¤ç»™å‡ºæ—‹æ¶¡çš„æœ€å°æ¶¡é‡æžå€¼
         vormax = maxval(abs(vor))
 
-c...  ËùÓÐÐ¡ÓÚvorminµÄ¾Ö²¿¼«Öµ¶¼½«±»È¥µô
-c...  (McWillimas ½¨ÒéµÄÈ¡Öµ:Ô¼ÎªÈ«×î´óÖµµÄ1/20£¬ÇÒ²»ËæÊ±¼ä¸Ä±ä)
+!...  æ‰€æœ‰å°äºŽvorminçš„å±€éƒ¨æžå€¼éƒ½å°†è¢«åŽ»æŽ‰
+!...  (McWillimas å»ºè®®çš„å–å€¼:çº¦ä¸ºå…¨æœ€å¤§å€¼çš„1/20ï¼Œä¸”ä¸éšæ—¶é—´æ”¹å˜)
         vormin = 0.05*vormax
 
-c...  È·¶¨ÐýÎÐ±ß½çµÄ²ÎÊý
+!...  ç¡®å®šæ—‹æ¶¡è¾¹ç•Œçš„å‚æ•°
         delt  = 0.2
 
-c...  ÐýÎÐµÄÖÜ³¤×î´óÖµÎª6.28, ¼´ÇøÓòµÄÒ»¸ö±ßµÄ³¤¶È
+!...  æ—‹æ¶¡çš„å‘¨é•¿æœ€å¤§å€¼ä¸º6.28, å³åŒºåŸŸçš„ä¸€ä¸ªè¾¹çš„é•¿åº¦
         crmax = amax1(float(n),256.0)
 
-c...  ÐýÎÐµÄ×î´óÃæ»ýÎª (0.1*2Pi)^2, ¼´Õû¸öÇøÓòµÄ1%.
+!...  æ—‹æ¶¡çš„æœ€å¤§é¢ç§¯ä¸º (0.1*2Pi)^2, å³æ•´ä¸ªåŒºåŸŸçš„1%.
         armax = amax1(float(n*n)/100.0,1000.0)
 
-c...  °ë¾¶µÄ×îÐ¡ÖµÎªÍø¸ñ³ß¶Èh, ³ýÁËÔÚ²âÊÔµÄ³õÆÚ, ´ËÌõ¼þºÜÉÙÍ¨²»¹ý. 
+!...  åŠå¾„çš„æœ€å°å€¼ä¸ºç½‘æ ¼å°ºåº¦h, é™¤äº†åœ¨æµ‹è¯•çš„åˆæœŸ, æ­¤æ¡ä»¶å¾ˆå°‘é€šä¸è¿‡. 
         rmin = 1.0
 
-c...  Öá¶Ô³ÆÇé¿ö²âÊÔÒ»: ÖÜ³¤³ýÃæ»ý R=0.5*C/sqrt(Pi A) < Rmax
+!...  è½´å¯¹ç§°æƒ…å†µæµ‹è¯•ä¸€: å‘¨é•¿é™¤é¢ç§¯ R=0.5*C/sqrt(Pi A) < Rmax
         rmax = 1.75
 
-c...  Öá¶Ô³ÆÇé¿ö²âÊÔ¶þ: ÐýÎÐÖØÐÄ¶ÔÖÐÐÄµã(ÎÐÁ¿¼«Öµµã)µÄÆ«Àë
+!...  è½´å¯¹ç§°æƒ…å†µæµ‹è¯•äºŒ: æ—‹æ¶¡é‡å¿ƒå¯¹ä¸­å¿ƒç‚¹(æ¶¡é‡æžå€¼ç‚¹)çš„åç¦»
         deltmax = 0.35
 
-c...  Öá¶Ô³ÆÇé¿ö²âÊÔÈý: ÐýÎÐÍÖÔ²¶È×î´óÖµ
+!...  è½´å¯¹ç§°æƒ…å†µæµ‹è¯•ä¸‰: æ—‹æ¶¡æ¤­åœ†åº¦æœ€å¤§å€¼
         epsmax  = 2.5
 
-c...  ÉÏÃæ¸ø³öµÄÊÇMcWillimasËù½¨ÒéµÄ, ÓÐÊ±Õë¶Ô¾ßÌåÇé¿ö, ¿ÉÄÜÐèÒªÐÞ¸Ä.
+!...  ä¸Šé¢ç»™å‡ºçš„æ˜¯McWillimasæ‰€å»ºè®®çš„, æœ‰æ—¶é’ˆå¯¹å…·ä½“æƒ…å†µ, å¯èƒ½éœ€è¦ä¿®æ”¹.
         crmax = amax1(float(n),256.0)
         armax = 0.25*crmax*crmax/3.14
         rmax = 2.0
@@ -52,7 +52,7 @@ c...  ÉÏÃæ¸ø³öµÄÊÇMcWillimasËù½¨ÒéµÄ, ÓÐÊ±Õë¶Ô¾ßÌåÇé¿ö, ¿ÉÄÜÐèÒªÐÞ¸Ä.
 
         return
         end
-c--------------------------------------------------------------
+!--------------------------------------------------------------
         subroutine pickvor0_input(idn)
         common /McWillimas/delt,crmax,armax,rmin,rmax,deltmax,epsmax,
      1                     vormin
@@ -72,7 +72,7 @@ c--------------------------------------------------------------
 
         return
         end
-c--------------------------------------------------------------
+!--------------------------------------------------------------
         subroutine pickvor(vor,n)
         real,dimension(n,n):: vor
         common /vortexdat/ ii0,jj0,gamv,arev,radv,epsv
@@ -83,9 +83,9 @@ c--------------------------------------------------------------
 
         vormax = maxval(abs(vor))
 
-c... ËÑË÷ËùÓÐµÄ¾Ö²¿¼«Öµ, ËÑË÷¿í¶ÈÎªld(Ò»°ãÈ¡ld=2), È»ºó£¬ÅÐ¶ÏÕâÐ©¾Ö²¿¼«Öµ
-c... ÊÇ·ñÊÇÒ»¸öÐýÎÐ½á¹¹£¬Èç¹ûÊÇ£¬ÔòÍ³¼ÆÈçÏÂÁ¿£ºÆ½¾ùÎÐÁ¿¼«Öµ£¬Æ½¾ù»·Á¿£¬Æ½
-c... ¾ù°ë¾¶£¬Æ½¾ùÃæ»ý£¬Æ½¾ùÍÖÔ²¶È£¬ÎÐÁ¿µÄÊýÄ¿Îªnv¡£
+!... æœç´¢æ‰€æœ‰çš„å±€éƒ¨æžå€¼, æœç´¢å®½åº¦ä¸ºld(ä¸€èˆ¬å–ld=2), ç„¶åŽï¼Œåˆ¤æ–­è¿™äº›å±€éƒ¨æžå€¼
+!... æ˜¯å¦æ˜¯ä¸€ä¸ªæ—‹æ¶¡ç»“æž„ï¼Œå¦‚æžœæ˜¯ï¼Œåˆ™ç»Ÿè®¡å¦‚ä¸‹é‡ï¼šå¹³å‡æ¶¡é‡æžå€¼ï¼Œå¹³å‡çŽ¯é‡ï¼Œå¹³
+!... å‡åŠå¾„ï¼Œå¹³å‡é¢ç§¯ï¼Œå¹³å‡æ¤­åœ†åº¦ï¼Œæ¶¡é‡çš„æ•°ç›®ä¸ºnvã€‚
 
         vorave = 0.0
         gamave = 0.0
@@ -100,7 +100,7 @@ c... ¾ù°ë¾¶£¬Æ½¾ùÃæ»ý£¬Æ½¾ùÍÖÔ²¶È£¬ÎÐÁ¿µÄÊýÄ¿Îªnv¡£
           vorij = vor(i,j)
           if(abs(vorij).lt.vormin) goto 10
           if(vorij.gt.0.0) then
-c... ÕýµÄ×î´óÖµ
+!... æ­£çš„æœ€å¤§å€¼
              do jj=j-ld,j+ld
                jj1 = mod(jj-1+n,n)+1
              do ii=i-ld,i+ld
@@ -111,7 +111,7 @@ c... ÕýµÄ×î´óÖµ
              enddo
              enddo
           else
-c... ¸ºµÄ×îÐ¡Öµ
+!... è´Ÿçš„æœ€å°å€¼
              do jj=j-ld,j+ld
                jj1 = mod(jj-1+n,n)+1
              do ii=i-ld,i+ld
@@ -123,11 +123,11 @@ c... ¸ºµÄ×îÐ¡Öµ
              enddo
           endif
 
-c... ³ÌÐòÔËÐÐµ½´Ë´¦£¬ËµÃ÷(i,j)´¦ÎªÒ»¸ö¾Ö²¿¼«Öµ
+!... ç¨‹åºè¿è¡Œåˆ°æ­¤å¤„ï¼Œè¯´æ˜Ž(i,j)å¤„ä¸ºä¸€ä¸ªå±€éƒ¨æžå€¼
           ii0 = i
           jj0 = j
-c... µ÷ÓÃ²âÊÔ³ÌÐò£¬ÅÐ¶Ï´Ë¾Ö²¿¼«Öµ´¦ÊÇ·ñÓÐÒ»¸öÐýÎÐ½á¹¹£¬¼«ÖµÎ»ÖÃÊÇÍ¨¹ý¹«¹²
-c... ¿é´«µÝµÄ¡£
+!... è°ƒç”¨æµ‹è¯•ç¨‹åºï¼Œåˆ¤æ–­æ­¤å±€éƒ¨æžå€¼å¤„æ˜¯å¦æœ‰ä¸€ä¸ªæ—‹æ¶¡ç»“æž„ï¼Œæžå€¼ä½ç½®æ˜¯é€šè¿‡å…¬å…±
+!... å—ä¼ é€’çš„ã€‚
           call test_vor(vor,n,key)
           if(key.eq.1) then 
             nv = nv+1
@@ -147,7 +147,7 @@ c... ¿é´«µÝµÄ¡£
         radave = radave/rnv
         epsave = epsave/rnv
 
-c... ¼ÆËãÎÐÁ¿µÄ¶þ½×¾ØºÍËÄ½×¾ØÒÔ¼°Æ½Ì¹Òò×Ó¡£
+!... è®¡ç®—æ¶¡é‡çš„äºŒé˜¶çŸ©å’Œå››é˜¶çŸ©ä»¥åŠå¹³å¦å› å­ã€‚
         sca = 1./float(n*n)
         vort(1) = sum((vor*sca)*(vor*sca))
         vort(2) = sum((vor*sca)**4)
@@ -155,9 +155,9 @@ c... ¼ÆËãÎÐÁ¿µÄ¶þ½×¾ØºÍËÄ½×¾ØÒÔ¼°Æ½Ì¹Òò×Ó¡£
 
         return
         end
-c-------------------------------------------------------------------
+!-------------------------------------------------------------------
         subroutine test_vor(vor,n,key)
-c... McWillimas ½¨ÒéµÄÈ¡Öµ£¬ÕâÐ©Öµ½«ÓÃÀ´ÅÐ¶ÏÒ»¸öÐýÎÐµÄºÏÀíÐÔ¡£
+!... McWillimas å»ºè®®çš„å–å€¼ï¼Œè¿™äº›å€¼å°†ç”¨æ¥åˆ¤æ–­ä¸€ä¸ªæ—‹æ¶¡çš„åˆç†æ€§ã€‚
         common /McWillimas/delt,crmax,armax,rmin,rmax,deltmax,epsmax,
      1                     vormin
         integer,dimension(n*n)::iv,jv
@@ -165,26 +165,26 @@ c... McWillimas ½¨ÒéµÄÈ¡Öµ£¬ÕâÐ©Öµ½«ÓÃÀ´ÅÐ¶ÏÒ»¸öÐýÎÐµÄºÏÀíÐÔ¡£
         common /vortexdat/ ii0,jj0,gamv,arev,radv,epsv
         common /vortexbox/ ii,jj,ii1,jj1
 
-c... Ê×ÏÈ¼ÙÉè´Ë¼«Öµµã²»ÊÇÐýÎÐ½á¹¹£¬Èç¹û³ÌÐòÖÐÍ¾·µ»Ø£¬Ôò±íÃ÷²»ÊÇÐýÎÐ¡£
+!... é¦–å…ˆå‡è®¾æ­¤æžå€¼ç‚¹ä¸æ˜¯æ—‹æ¶¡ç»“æž„ï¼Œå¦‚æžœç¨‹åºä¸­é€”è¿”å›žï¼Œåˆ™è¡¨æ˜Žä¸æ˜¯æ—‹æ¶¡ã€‚
         key = 0
         vormax = vor(ii0,jj0)
 
         ii = ii0
         jj = jj0
 
-c... ÑØ+x·½ÏòËÑË÷µÚÒ»¸ö±ß½çµã 
+!... æ²¿+xæ–¹å‘æœç´¢ç¬¬ä¸€ä¸ªè¾¹ç•Œç‚¹ 
 10      continue           
         ii = mod(ii,n)+1                      ! This is infact "ii=ii+1"
         vorijm = vor(ii,jj)/vormax
-c.... Èç¹û³öÏÖÐÂµÄ¼«Öµ£¬ÔòºöÂÔ´Ë¼«Öµ
+!.... å¦‚æžœå‡ºçŽ°æ–°çš„æžå€¼ï¼Œåˆ™å¿½ç•¥æ­¤æžå€¼
         if(vorijm.gt.1.0) return
-c.... ´ËµãÈÔÈ»´¦ÓÚÓÐÐ§Çø¼äÄÚ£¬·µ»Øµ½10¼ÌÐøËÑË÷ÏÂÒ»µã
+!.... æ­¤ç‚¹ä»ç„¶å¤„äºŽæœ‰æ•ˆåŒºé—´å†…ï¼Œè¿”å›žåˆ°10ç»§ç»­æœç´¢ä¸‹ä¸€ç‚¹
         if(vorijm.gt.delt) goto 10
 
-c..... ÕÒµ½±ß½çµÄµÚÒ»¸öµã(ii1,jj0)£¬ËÑË÷·½Ïò¸ÄÎª+y·½Ïò
+!..... æ‰¾åˆ°è¾¹ç•Œçš„ç¬¬ä¸€ä¸ªç‚¹(ii1,jj0)ï¼Œæœç´¢æ–¹å‘æ”¹ä¸º+yæ–¹å‘
         ii = mod(ii-2+n,n)+1                  ! this is ii=ii-1
-c....Èç¹ûÖ»ÓÐÒ»¸ö¹ÂÁ¢µÄµãÂú×ãÌõ¼þ,ÔòÉ¾³ý
-c...  ii=ii0Ê±£¬ÓÒµãÒÑ¾­²»ÊôÓÚÐýÎÐ£¬ÒÀ´ÎÔÙÅÐ¶Ï×óµã£¬ÏÂµãºÍÉÏµã¡£
+!....å¦‚æžœåªæœ‰ä¸€ä¸ªå­¤ç«‹çš„ç‚¹æ»¡è¶³æ¡ä»¶,åˆ™åˆ é™¤
+!...  ii=ii0æ—¶ï¼Œå³ç‚¹å·²ç»ä¸å±žäºŽæ—‹æ¶¡ï¼Œä¾æ¬¡å†åˆ¤æ–­å·¦ç‚¹ï¼Œä¸‹ç‚¹å’Œä¸Šç‚¹ã€‚
         if(ii.eq.ii0) then
           nc = 0
           ii1 = mod(ii-2+n,n)+1
@@ -196,31 +196,31 @@ c...  ii=ii0Ê±£¬ÓÒµãÒÑ¾­²»ÊôÓÚÐýÎÐ£¬ÒÀ´ÎÔÙÅÐ¶Ï×óµã£¬ÏÂµãºÍÉÏµã¡£
           if(nc.eq.3) return
         endif
 
-c....¼ÇÂ¼³õÊ¼µã(ii1,jj0)ºÍ³õÊ¼ËÑË÷·½Ïò£»
+!....è®°å½•åˆå§‹ç‚¹(ii1,jj0)å’Œåˆå§‹æœç´¢æ–¹å‘ï¼›
         ii1 = ii
         idx = 0
         idy = 1
-c... Ãæ»ýºÍÖÜ³¤¶¼ÒÔÍø¸ñ³ß¶ÈhÎªµ¥Î»£¬
-c... ÓÚÊÇµÃµ½µÄÖÜ³¤³ËÒÔh¾ÍÊÇÊµ¼Ê³¤¶È£¬Ãæ»ýÔòÐèÒª³ËÒÔh^2²ÅµÃµ½
-c... Êµ¼ÊÃæ»ý¡£´ÓÕÒµ½µÄµÚÒ»µã¿ªÊ¼£¬¼ÇÂ¼ÖÜ³¤Îª0£¬µãÊýÎª1¡£
+!... é¢ç§¯å’Œå‘¨é•¿éƒ½ä»¥ç½‘æ ¼å°ºåº¦hä¸ºå•ä½ï¼Œ
+!... äºŽæ˜¯å¾—åˆ°çš„å‘¨é•¿ä¹˜ä»¥hå°±æ˜¯å®žé™…é•¿åº¦ï¼Œé¢ç§¯åˆ™éœ€è¦ä¹˜ä»¥h^2æ‰å¾—åˆ°
+!... å®žé™…é¢ç§¯ã€‚ä»Žæ‰¾åˆ°çš„ç¬¬ä¸€ç‚¹å¼€å§‹ï¼Œè®°å½•å‘¨é•¿ä¸º0ï¼Œç‚¹æ•°ä¸º1ã€‚
         cir = 0
         nc = 1
         iv(nc) = ii
         jv(nc) = jj
 
 21      continue           
-c... 1. ÅÐ¶ÏÓÒ×ª90¶ÈµÄµãÊÇ·ñÊôÓÚ´ËÐýÎÐ
+!... 1. åˆ¤æ–­å³è½¬90åº¦çš„ç‚¹æ˜¯å¦å±žäºŽæ­¤æ—‹æ¶¡
         iit = mod(ii+idy-1+n,n)+1
         jjt = mod(jj-idx-1+n,n)+1
         vorijm = vor(iit,jjt)/vormax
         if(vorijm.gt.delt) then
-c......ÊôÓÚ£º
+!......å±žäºŽï¼š
             cir = cir+1.0
-c......»Øµ½ÁËµÚÒ»µã£¬´ËÐýÎÐµÄËÑË÷¹ý³Ì½áÊø£¬´ËÎª¿Ï¶¨³ö¿Ú¡£
+!......å›žåˆ°äº†ç¬¬ä¸€ç‚¹ï¼Œæ­¤æ—‹æ¶¡çš„æœç´¢è¿‡ç¨‹ç»“æŸï¼Œæ­¤ä¸ºè‚¯å®šå‡ºå£ã€‚
             if(iit.eq.ii1.and.jjt.eq.jj0) goto 30
-c......´ËÐýÎÐµÄÖÜ³¤¹ý³¤£¬²»ÊÇÒ»¸öÕý³£µÄÐýÎÐ
+!......æ­¤æ—‹æ¶¡çš„å‘¨é•¿è¿‡é•¿ï¼Œä¸æ˜¯ä¸€ä¸ªæ­£å¸¸çš„æ—‹æ¶¡
             if(cir.gt.crmax) return
-c......¼ÇÂ¼¸Ãµã£¬µ±Ç°·½ÏòÓÒÐý90¶È£¬¼ÌÐøËÑË÷
+!......è®°å½•è¯¥ç‚¹ï¼Œå½“å‰æ–¹å‘å³æ—‹90åº¦ï¼Œç»§ç»­æœç´¢
             ii = iit
             jj = jjt
             nc = nc+1
@@ -233,36 +233,36 @@ c......¼ÇÂ¼¸Ãµã£¬µ±Ç°·½ÏòÓÒÐý90¶È£¬¼ÌÐøËÑË÷
         endif
 
 22      continue           
-c... ÓÒÐý90¶ÈµÄµã²»ÊôÓÚ´ËÐýÎÐ£¬ÅÐ¶Ïµ±Ç°·½ÏòµÄÏÂÒ»¸öµã
+!... å³æ—‹90åº¦çš„ç‚¹ä¸å±žäºŽæ­¤æ—‹æ¶¡ï¼Œåˆ¤æ–­å½“å‰æ–¹å‘çš„ä¸‹ä¸€ä¸ªç‚¹
         iit = mod(ii+idx-1+n,n)+1
         jjt = mod(jj+idy-1+n,n)+1
         vorijm = vor(iit,jjt)/vormax
         if(vorijm.gt.delt) then
-c............. ÊôÓÚ£º¼ÇÂ¼´Ëµã£¬²¢ÑØÍ¬·½Ïò¼ÌÐøËÑË÷
+!............. å±žäºŽï¼šè®°å½•æ­¤ç‚¹ï¼Œå¹¶æ²¿åŒæ–¹å‘ç»§ç»­æœç´¢
                ii = iit
                jj = jjt
                cir = cir+1.0
                if(cir.gt.crmax) return
-c......»Øµ½ÁËµÚÒ»µã£¬´ËÐýÎÐµÄËÑË÷¹ý³Ì½áÊø£¬´ËÎª¿Ï¶¨³ö¿Ú¡£
+!......å›žåˆ°äº†ç¬¬ä¸€ç‚¹ï¼Œæ­¤æ—‹æ¶¡çš„æœç´¢è¿‡ç¨‹ç»“æŸï¼Œæ­¤ä¸ºè‚¯å®šå‡ºå£ã€‚
                if(ii.eq.ii1.and.jj.eq.jj0) goto 30
                nc = nc+1
                iv(nc) = ii
                jv(nc) = jj
                goto 21
         endif
-c... µ±Ç°·½ÏòµÄÏÂÒ»¸öµã²»ÊôÓÚ´ËÐýÎÐ£¬µ±Ç°·½Ïò×ó×ª90¶È£¬¼ÌÐøËÑË÷
+!... å½“å‰æ–¹å‘çš„ä¸‹ä¸€ä¸ªç‚¹ä¸å±žäºŽæ­¤æ—‹æ¶¡ï¼Œå½“å‰æ–¹å‘å·¦è½¬90åº¦ï¼Œç»§ç»­æœç´¢
         idxyt = idx
         idx = -idy
         idy = idxyt
         goto 22
 
-c... ËÑË÷»Øµ½ÁË³õÊ¼µã£¬ËÑË÷¹ý³Ì½áÊø
+!... æœç´¢å›žåˆ°äº†åˆå§‹ç‚¹ï¼Œæœç´¢è¿‡ç¨‹ç»“æŸ
 30      continue
 
-c... µ÷ÕûÊý×éiv,jv£¬Ê¹µÃËùÓÐµãµÄ±ê¼ÇÔÚÍ¬Ò»¸öÁ¬ÐøµÄÖÜÆÚÄÚ(ÒÔii0,jj0Îª×¼)
-c..... µÚÒ»µã±ØÔÚÖÐÐÄ¼«ÖµµãµÄÓÒ±ß
+!... è°ƒæ•´æ•°ç»„iv,jvï¼Œä½¿å¾—æ‰€æœ‰ç‚¹çš„æ ‡è®°åœ¨åŒä¸€ä¸ªè¿žç»­çš„å‘¨æœŸå†…(ä»¥ii0,jj0ä¸ºå‡†)
+!..... ç¬¬ä¸€ç‚¹å¿…åœ¨ä¸­å¿ƒæžå€¼ç‚¹çš„å³è¾¹
         if(iv(1).lt.ii0) iv(1)=iv(1)+n
-c..... ºóÃæµÄÃ¿Ò»¸öµã¶¼ÒÔËüµÄÇ°Ò»¸öµãÎª²ÎÕÕ£¬¿´ÊÇ·ñÐèÒªÐÞÕý
+!..... åŽé¢çš„æ¯ä¸€ä¸ªç‚¹éƒ½ä»¥å®ƒçš„å‰ä¸€ä¸ªç‚¹ä¸ºå‚ç…§ï¼Œçœ‹æ˜¯å¦éœ€è¦ä¿®æ­£
         do i=2,nc
               idx = iv(i)-iv(i-1)
               idy = jv(i)-jv(i-1)
@@ -272,8 +272,8 @@ c..... ºóÃæµÄÃ¿Ò»¸öµã¶¼ÒÔËüµÄÇ°Ò»¸öµãÎª²ÎÕÕ£¬¿´ÊÇ·ñÐèÒªÐÞÕý
               if(idy.lt.-1) jv(i) = jv(i)+n
         enddo
 
-c... ¼ÆËãÒ»½×¿Õ¼ä¾Ø(ÖØÐÄÎ»ÒÆ)ºÍ¶þ½×¾Ø¾ØÕó(ÕâÀïÒª¶ÔÕû¸öÐýÎÐµÄÃæ»ý»ý·Ö)
-c... ÕâÀï¶ÔÊôÓÚ´Ë¼¯ºÏµÄËùÓÐµãÇóºÍ(¼ÙÉèÍø¸ñµÄ³ß¶ÈÎª1£¬Íø¸ñÃæ»ýÒ²ÊÇ1)
+!... è®¡ç®—ä¸€é˜¶ç©ºé—´çŸ©(é‡å¿ƒä½ç§»)å’ŒäºŒé˜¶çŸ©çŸ©é˜µ(è¿™é‡Œè¦å¯¹æ•´ä¸ªæ—‹æ¶¡çš„é¢ç§¯ç§¯åˆ†)
+!... è¿™é‡Œå¯¹å±žäºŽæ­¤é›†åˆçš„æ‰€æœ‰ç‚¹æ±‚å’Œ(å‡è®¾ç½‘æ ¼çš„å°ºåº¦ä¸º1ï¼Œç½‘æ ¼é¢ç§¯ä¹Ÿæ˜¯1)
         ii = minval(iv(1:nc))
         jj = minval(jv(1:nc))
         ii1= maxval(iv(1:nc)) 
@@ -289,28 +289,28 @@ c... ÕâÀï¶ÔÊôÓÚ´Ë¼¯ºÏµÄËùÓÐµãÇóºÍ(¼ÙÉèÍø¸ñµÄ³ß¶ÈÎª1£¬Íø¸ñÃæ»ýÒ²ÊÇ1)
               idy = mod(j-1+n,n)+1
         do i=ii,ii1
               idx = mod(i-1+n,n)+1 
-c... ²âÊÔ(i,j)ÊÇ·ñÔÚÇøÓòÄÚ(°üÀ¨±ß½çÉÏ)£¬ÔÚidxyt=1£¬·ñÔòidxyt=0
+!... æµ‹è¯•(i,j)æ˜¯å¦åœ¨åŒºåŸŸå†…(åŒ…æ‹¬è¾¹ç•Œä¸Š)ï¼Œåœ¨idxyt=1ï¼Œå¦åˆ™idxyt=0
               idxyt = 1
-c... 1. µã(i,j)´¦ÓÚ±ß½çÉÏ£¬ÕâÑùµÄµãÔÚÍ³¼Æ»·Á¿Ê±¿¼ÂÇ£¬Í³¼ÆÆäËûÁ¿Ê±²»
-c...    ¿¼ÂÇ£¬¿ÉÒÔ±ÜÃâ°ÑÍÏÒ»¸öºÜÏ¸µÄ³¤Î²°ÍµÄÎÐÅÅ³ý¡£
-c...    Èç¹ûÓÃgoto 50Ò»¾ä£¬ÔòÊÇ±ß½çµãÒ²È«²¿¿¼ÂÇ¡£
+!... 1. ç‚¹(i,j)å¤„äºŽè¾¹ç•Œä¸Šï¼Œè¿™æ ·çš„ç‚¹åœ¨ç»Ÿè®¡çŽ¯é‡æ—¶è€ƒè™‘ï¼Œç»Ÿè®¡å…¶ä»–é‡æ—¶ä¸
+!...    è€ƒè™‘ï¼Œå¯ä»¥é¿å…æŠŠæ‹–ä¸€ä¸ªå¾ˆç»†çš„é•¿å°¾å·´çš„æ¶¡æŽ’é™¤ã€‚
+!...    å¦‚æžœç”¨goto 50ä¸€å¥ï¼Œåˆ™æ˜¯è¾¹ç•Œç‚¹ä¹Ÿå…¨éƒ¨è€ƒè™‘ã€‚
               do jjt = 1,nc
                 if(iv(jjt).eq.i.and.jv(jjt).eq.j) then
-c                   gamv = gamv + vor(idx,idy)
-c                   goto 51
+!                   gamv = gamv + vor(idx,idy)
+!                   goto 51
                    goto 50
                 endif
               enddo
-c... 2. µã(i,j)´¦ÓÚ±ß½çµã°üÎ§µÄÇøÓòÄÚ²¿
+!... 2. ç‚¹(i,j)å¤„äºŽè¾¹ç•Œç‚¹åŒ…å›´çš„åŒºåŸŸå†…éƒ¨
               call POLYGON_CP2DI(iv,jv,nc,real(i),real(j),INK)
               if(ink.gt.nc) goto 50
 51            continue
               idxyt = 0
 50            continue
               if(idxyt.eq.1) then
-c....Èç¹ûÄÚ²¿ÓÐ¸üÇ¿µÄ¼«Öµ£¬ÔòºöÂÔ´Ë½ÏÐ¡µÄ¼«Öµ
+!....å¦‚æžœå†…éƒ¨æœ‰æ›´å¼ºçš„æžå€¼ï¼Œåˆ™å¿½ç•¥æ­¤è¾ƒå°çš„æžå€¼
                  if(abs(vor(idx,idy)).gt.abs(vormax)) return
-c....Èç¹ûÄÚ²¿ÓÐ²»ÊôÓÚ´ËÐýÎÐµÄÖµ£¬ÔòºöÂÔ´Ë½ÏÐ¡µÄ¼«Öµ
+!....å¦‚æžœå†…éƒ¨æœ‰ä¸å±žäºŽæ­¤æ—‹æ¶¡çš„å€¼ï¼Œåˆ™å¿½ç•¥æ­¤è¾ƒå°çš„æžå€¼
                  if(vor(idx,idy)/vormax .le. 0.0) return
                  gamv = gamv + vor(idx,idy)
                  arev = arev + 1.0
@@ -334,19 +334,19 @@ c....Èç¹ûÄÚ²¿ÓÐ²»ÊôÓÚ´ËÐýÎÐµÄÖµ£¬ÔòºöÂÔ´Ë½ÏÐ¡µÄ¼«Öµ
         call plot_vortex(n,iv,jv,nc,14)
 
 
-c....´ËÐýÎÐµÄÃæ»ý¹ý´ó£¬²»ÊÇÒ»¸öÕý³£µÄÐýÎÐ
+!....æ­¤æ—‹æ¶¡çš„é¢ç§¯è¿‡å¤§ï¼Œä¸æ˜¯ä¸€ä¸ªæ­£å¸¸çš„æ—‹æ¶¡
         if(arev.gt.armax) return
 
-c....ÕÒµ½µÄÐýÎÐ°ë¾¶¹ýÐ¡£¬²»ÄÜ¹¹³ÉÒ»¸öºÏÀíµÄÐýÎÐ
+!....æ‰¾åˆ°çš„æ—‹æ¶¡åŠå¾„è¿‡å°ï¼Œä¸èƒ½æž„æˆä¸€ä¸ªåˆç†çš„æ—‹æ¶¡
         if(radv.lt.rmin) return
 
-c... ÖÜ³¤ºÍÃæ»ý²»ÏàÅä£¬ËµÃ÷ÐýÎÐµÄÐÎ×´²»Ô²
+!... å‘¨é•¿å’Œé¢ç§¯ä¸ç›¸é…ï¼Œè¯´æ˜Žæ—‹æ¶¡çš„å½¢çŠ¶ä¸åœ†
         if(0.5*cir/sqrt(3.1416*arev).gt.rmax) return
 
-c... ¼«ÖµµãºÍÖØÐÄµÄÆ«ÒÆ¹ý´ó
+!... æžå€¼ç‚¹å’Œé‡å¿ƒçš„åç§»è¿‡å¤§
         if( sqrt(dx1*dx1+dx2*dx2)/radv.gt.deltmax) return
 
-c... ÍÖÔ²¶È¹ý´ó
+!... æ¤­åœ†åº¦è¿‡å¤§
 
         cir = sqrt((rm11-rm22)*(rm11-rm22)+4.0*rm12*rm12)
         dx1 = rm11+rm22+cir
@@ -355,7 +355,7 @@ c... ÍÖÔ²¶È¹ý´ó
         epsv = sqrt(dx1/dx2-1.0)
         if(epsv.gt.epsmax) return
 
-c... Í¨¹ýÁËËùÓÐµÄ²âÊÔ£¬±íÃ÷´Ë¼«ÖµËùÔÚÎ»ÖÃÊÇÒ»¸öÐýÎÐ½á¹¹
+!... é€šè¿‡äº†æ‰€æœ‰çš„æµ‹è¯•ï¼Œè¡¨æ˜Žæ­¤æžå€¼æ‰€åœ¨ä½ç½®æ˜¯ä¸€ä¸ªæ—‹æ¶¡ç»“æž„
 
         call plot_vortex(n,iv,jv,nc,15)
 
@@ -363,7 +363,7 @@ c... Í¨¹ýÁËËùÓÐµÄ²âÊÔ£¬±íÃ÷´Ë¼«ÖµËùÔÚÎ»ÖÃÊÇÒ»¸öÐýÎÐ½á¹¹
 
         return
         end
-C-------------------------------------------------------------------------
+!-------------------------------------------------------------------------
         SUBROUTINE POLYGON_CP2DI(X,Y,N,XX,YY,INK)
         PARAMETER(PI2=0.7853981633974483,COE=0.6180339887498949)
         PARAMETER(DA=PI2*COE,ZERO=1.0E-6,UNIN=1.0-ZERO,ZEROB=1.2*ZERO)
@@ -412,17 +412,17 @@ C-------------------------------------------------------------------------
 
             DD = (X2-X1)*(YY-YP)-(Y2-Y1)*(XX-XP)
             IF(ABS(DD).LE.ZERO) THEN
-C...  ´ËÊ±£¬1-2ºÍ(XX,YY)-(XP,YP)Æ½ÐÐ£¬ÐèÒª¼ÆËãÁ½¸öÆ½ÐÐÏßÖ®¼äµÄ¾àÀë¡£
+!...  æ­¤æ—¶ï¼Œ1-2å’Œ(XX,YY)-(XP,YP)å¹³è¡Œï¼Œéœ€è¦è®¡ç®—ä¸¤ä¸ªå¹³è¡Œçº¿ä¹‹é—´çš„è·ç¦»ã€‚
               DD = (X1-XX)*(YP-YY)-(Y1-YY)*(XP-XX)
-C...  ×¢Òâ£¬ÕâÀïËùÓÃµÄÅÐ¾ÝÊÇÅÐ¶Ï1-2±ßÉÏµÄµã1µ½(XX,YY)-(XP,YP)µÄ¾àÀë£¬¶ø²»ÊÇ
-c...  ¼ÆËãµ½1-2µÄ¾àÀë£¬ÕâÑù×öµÄºÃ´¦ÊÇÔÚ1£­2±ßµÄ³¤¶È½Ó½üÓÚÁãÊ±£¬Ò²²»»áÓÐÊ²Ã´
-c.... ÕÏ°­¡£¸ù¾ÝÕâÀïËùÓÃµÄ¼ÆËã·½·¨£¬Ïß¶Î(XX,YY)-(XP,YP)µÄ³¤¶È×Ü²»»áÊÇÁã¡£
+!...  æ³¨æ„ï¼Œè¿™é‡Œæ‰€ç”¨çš„åˆ¤æ®æ˜¯åˆ¤æ–­1-2è¾¹ä¸Šçš„ç‚¹1åˆ°(XX,YY)-(XP,YP)çš„è·ç¦»ï¼Œè€Œä¸æ˜¯
+!...  è®¡ç®—åˆ°1-2çš„è·ç¦»ï¼Œè¿™æ ·åšçš„å¥½å¤„æ˜¯åœ¨1ï¼2è¾¹çš„é•¿åº¦æŽ¥è¿‘äºŽé›¶æ—¶ï¼Œä¹Ÿä¸ä¼šæœ‰ä»€ä¹ˆ
+!.... éšœç¢ã€‚æ ¹æ®è¿™é‡Œæ‰€ç”¨çš„è®¡ç®—æ–¹æ³•ï¼Œçº¿æ®µ(XX,YY)-(XP,YP)çš„é•¿åº¦æ€»ä¸ä¼šæ˜¯é›¶ã€‚
               IF(ABS(DD).LT.ZERO) THEN 
-C.... 1µãµ½(XX,YY)-(XP,YP)µÄ¾àÀëÊÇÁã£¬ÔÙÅÐ¶Ï1-2³¤¶È£¬Ö»ÒªËü²»ÊÇÁã£¬×ÜÄÜ¼ÆËã³öÀ´£¬
+!.... 1ç‚¹åˆ°(XX,YY)-(XP,YP)çš„è·ç¦»æ˜¯é›¶ï¼Œå†åˆ¤æ–­1-2é•¿åº¦ï¼Œåªè¦å®ƒä¸æ˜¯é›¶ï¼Œæ€»èƒ½è®¡ç®—å‡ºæ¥ï¼Œ
                 DD = ABS(X2-X1)+ABS(Y2-Y1)
                 IF(ABS(DD).LT.ZERO) THEN
-C.... Èç¹û1-2µÄ¾àÀëÒ²ÊÇÁã£¬ËµÃ÷1£­2±ß¼¸ºõÊÇÒ»¸öµã£¬´ËÊ±Ö»Òª±»ÅÐ¶ÏµÄµã²»ÊÇÔÚ´Ë±ß
-c.... ¸½½ü£¬ÄÇÃ´Í¨¹ýÒÆ¶¯Pµã¿ÉÒÔ±ÜÃâÕâÖÖ²»È·¶¨ÐÔ£¬
+!.... å¦‚æžœ1-2çš„è·ç¦»ä¹Ÿæ˜¯é›¶ï¼Œè¯´æ˜Ž1ï¼2è¾¹å‡ ä¹Žæ˜¯ä¸€ä¸ªç‚¹ï¼Œæ­¤æ—¶åªè¦è¢«åˆ¤æ–­çš„ç‚¹ä¸æ˜¯åœ¨æ­¤è¾¹
+!.... é™„è¿‘ï¼Œé‚£ä¹ˆé€šè¿‡ç§»åŠ¨Pç‚¹å¯ä»¥é¿å…è¿™ç§ä¸ç¡®å®šæ€§ï¼Œ
                   DD = ABS(XX-X1)+ABS(YY-Y1)
                   IF(DD.LT.ZERO) THEN
                     INK = IB
@@ -438,55 +438,55 @@ c.... ¸½½ü£¬ÄÇÃ´Í¨¹ýÒÆ¶¯Pµã¿ÉÒÔ±ÜÃâÕâÖÖ²»È·¶¨ÐÔ£¬
                A1 = ((XX-X1)*(YY-YP)-(YY-Y1)*(XX-XP))/DD
                A2 = ((X2-X1)*(YY-Y1)-(Y2-Y1)*(XX-X1))/DD
               IF(A1.GE.ZERO.AND.A1.LE.UNIN) THEN
-C1. (X1,Y1)--(X2,Y2)ºÍ(XX,YY)--(XP,YP)»òÆäÑÓ³¤ÏßÏà½»¡£
-C     1.1 (X1,Y1)--(X2,Y2)ºÍ(XX,YY)--(XP,YP)Ïà½»
+!1. (X1,Y1)--(X2,Y2)å’Œ(XX,YY)--(XP,YP)æˆ–å…¶å»¶é•¿çº¿ç›¸äº¤ã€‚
+!     1.1 (X1,Y1)--(X2,Y2)å’Œ(XX,YY)--(XP,YP)ç›¸äº¤
                 IF(A2.GE.ZERO.AND.A2.LE.UNIN) THEN
                   IPCROSS=IPCROSS+1
                 ELSEIF(A2.LE.(-ZERO).OR.A2.GE.1.0+ZERO) THEN
-C     1.2 (X1,Y1)--(X2,Y2)ºÍ(XX,YY)--(XP,YP)µÄÑÓ³¤ÏßÏà½»¡£
+!     1.2 (X1,Y1)--(X2,Y2)å’Œ(XX,YY)--(XP,YP)çš„å»¶é•¿çº¿ç›¸äº¤ã€‚
 
                 ELSEIF(ABS(A2).LT.ZEROB) THEN 
-C     1.3 (XX,YY)ÔÚ(X1,Y1)--(X2,Y2)ÉÏ¡£
+!     1.3 (XX,YY)åœ¨(X1,Y1)--(X2,Y2)ä¸Šã€‚
                   INK = IB
                   RETURN
                 ELSEIF(ABS(A2-1.0).LT.ZEROB) THEN 
-C     1.4 (XP,YP)ÔÚ(X1,Y1)--(X2,Y2)ÉÏ£¬²»Ó¦ÓÐ´ËÇé¿ö·¢Éú¡£
+!     1.4 (XP,YP)åœ¨(X1,Y1)--(X2,Y2)ä¸Šï¼Œä¸åº”æœ‰æ­¤æƒ…å†µå‘ç”Ÿã€‚
                   STOP 'ERROR HAPPEDED IN POLYGON_CP2DI'
                 ELSE
                   STOP 'ERROR 1 IN POLYGON_CP2DI'                
                 ENDIF
               ELSEIF(ABS(A1).LT.ZEROB) THEN
-C2. (X1,Y1)ÔÚ(XX,YY)--(XP,YP)»òÆäÑÓ³¤Ïß¸½½ü¡£
+!2. (X1,Y1)åœ¨(XX,YY)--(XP,YP)æˆ–å…¶å»¶é•¿çº¿é™„è¿‘ã€‚
                 IF(ABS(A2).LT.ZEROB) THEN
-C     2.1 (X1,Y1)ÔÚ(XX,YY)¸½½ü
+!     2.1 (X1,Y1)åœ¨(XX,YY)é™„è¿‘
                    INK = -IB
                    RETURN
                 ELSEIF(A2.GT.ZERO.AND.A2.LT.UNIN) THEN
-C     2.2 (X1,Y1)ÔÚ(XX,YY)--(XP,YP)¸½½ü 
+!     2.2 (X1,Y1)åœ¨(XX,YY)--(XP,YP)é™„è¿‘ 
                    GOTO 100
                 ELSEIF(A2.LE.-ZERO) THEN
-C     2.3 (X1,Y1)--(X2,Y2)ºÍ(XX,YY)--(XP,YP)²»Ïà½» 
+!     2.3 (X1,Y1)--(X2,Y2)å’Œ(XX,YY)--(XP,YP)ä¸ç›¸äº¤ 
 
                 ELSE
                    STOP 'ERROR 2 IN POLYGON_CP2DI' 
                 ENDIF
               ELSEIF(ABS(A1-1.0).LT.ZEROB) THEN
-C3. (X2,Y2)ÔÚ(XX,YY)--(XP,YP)»òÆäÑÓ³¤Ïß¸½½ü¡£
+!3. (X2,Y2)åœ¨(XX,YY)--(XP,YP)æˆ–å…¶å»¶é•¿çº¿é™„è¿‘ã€‚
                 IF(ABS(A2).LT.ZEROB) THEN
-C     3.1 (X2,Y2)ÔÚ(XX,YY)¸½½ü
+!     3.1 (X2,Y2)åœ¨(XX,YY)é™„è¿‘
                    INK = -I
                    RETURN
                 ELSEIF(A2.GT.ZERO.AND.A2.LT.UNIN) THEN
-C     3.2 (X2,Y2)ÔÚ(XX,YY)--(XP,YP)¸½½ü 
+!     3.2 (X2,Y2)åœ¨(XX,YY)--(XP,YP)é™„è¿‘ 
                    GOTO 100
                 ELSEIF(A2.LE.-ZERO) THEN
-C     3.3 (X1,Y1)--(X2,Y2)ºÍ(XX,YY)--(XP,YP)²»Ïà½» 
+!     3.3 (X1,Y1)--(X2,Y2)å’Œ(XX,YY)--(XP,YP)ä¸ç›¸äº¤ 
 
                 ELSE
                    STOP 'ERROR 3 IN POLYGON_CP2DI' 
                 ENDIF
               ELSEIF(A1.LE.(-ZERO).OR.A1.GE.1.0+ZERO) THEN
-C4. (X1,Y1)--(X2,Y2)ºÍ(XX,YY)--(XP,YP)»òÆäÑÓ³¤Ïß²»Ïà½»¡£
+!4. (X1,Y1)--(X2,Y2)å’Œ(XX,YY)--(XP,YP)æˆ–å…¶å»¶é•¿çº¿ä¸ç›¸äº¤ã€‚
               ELSE
                  write(*,*) 'a1,a2=',a1,a2
                  STOP 'ERROR Last IN POLYGON_CP2DI'

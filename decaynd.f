@@ -288,30 +288,31 @@
 
         call wavenumber(kx,ky,k2,k2e,id,1)
 
-!**********************************************************
-!...WRITE ENERGY SPECTRUM
-         if (mod(nsteps,ieout).eq.0) then
-            tmp= wz*conjg(wz) / k2
-            if (id.eq.0)  tmp(:, 1)=0.50*tmp(:, 1)  
-            do i=1,nek           
-                 ek(i)=sum(tmp,mask=(abs(sqrt(k2)-i-0.499999).lt.0.5) )
-            enddo
-            call mpi_reduce(ek,e_t,nek,MPI_REAL,MPI_SUM,0,
-     +                                       nallgrp,ierror)
-            if (id.eq.0) then
-             write(fin,109) iopath,'spectrum.d'
-             call movespa(fin,80)
-             open(20,file=fin,access='append',status='unknown')
-             write(20,201) jjj-1,nsteps,time,sum(e_t)
-             do i=1,nek
-                 write(20, 1002) i,  e_t(i)
-             enddo
-             close(20)
-            endif    
-             jjj = jjj + 1
-         endif
-201      format(1x,'#k',3x,'j=',i3,3x,'nsteps=',i6,3x,'Time=',f10.4,3x,
-     +                'Te=',e15.6)
+!!**********************************************************
+!!---Some extra job need to do here to produce the correct spectrum
+!!...WRITE ENERGY SPECTRUM
+!         if (mod(nsteps,ieout).eq.0) then
+!            tmp= wz*conjg(wz) / k2
+!            if (id.eq.0)  tmp(:, 1)=0.50*tmp(:, 1)  
+!            do i=1,nek           
+!                 ek(i)=sum(tmp,mask=(abs(sqrt(k2)-i-0.499999).lt.0.5) )
+!            enddo
+!            call mpi_reduce(ek,e_t,nek,MPI_REAL,MPI_SUM,0,
+!     +                                       nallgrp,ierror)
+!            if (id.eq.0) then
+!             write(fin,109) iopath,'spectrum.d'
+!             call movespa(fin,80)
+!             open(20,file=fin,access='append',status='unknown')
+!             write(20,201) jjj-1,nsteps,time,sum(e_t)
+!             do i=1,nek
+!                 write(20, 1002) i,  e_t(i)
+!             enddo
+!             close(20)
+!            endif    
+!             jjj = jjj + 1
+!         endif
+!201      format(1x,'#k',3x,'j=',i3,3x,'nsteps=',i6,3x,'Time=',f10.4,3x,
+!     +                'Te=',e15.6)
    
 !...STORE VORTICITY TEMPORARILY
          tmp = real(wz)
@@ -477,35 +478,37 @@
 !...RECOVER VORTICITY
            wz = cmplx( tmp,tmp1)
 
-!...CALCULATE ENSTROPHY FLUX (it must be done HERE)
-!...enstrophy flux is
-!   2 Imag [ w^*(k) k.F(uw) ]  (F(.) means fourier transform)
-         if (mod(nsteps,ieout).eq.0) then
-            vx =  2.* (0.0, 1.0)*vy
-            kx = real(wz)*aimag(vx) - aimag(wz)*real(vx)
-            if (id.eq.0)  kx (:,1)=0.50*kx (:,1)  
-            sum1=0.0 
-            do i = 1,nek          
-               a = i - 1 + 0.5
-               ek(i) =sum (kx,mask=(sqrt(k2).ge.a.and.sqrt(k2).lt.a+1) )
-            enddo
-            call mpi_reduce(ek, e_t, nek, MPI_REAL,MPI_SUM,0,
-     +           nallgrp,ierror)
-            if (id.eq.0) then
-               write(fin,109) iopath,'enstflx.d'
-               call movespa(fin,80)
-               open(82,file=fin,access='append',status='unknown')
-               write(82, 821) iii,nsteps,time
-               do i=1,nek
-                   sum1=sum1+e_t(i)
-                   write(82, 1002) i, -sum1
-               end do
-               close(82)
-            endif
-            iii = iii + 1
-
-         endif
-821      format(1x,'#k',3x,'i=',i3,3x,'nsteps=',i6,3x,'time=',f10.4) 
+!!---Commented out by LIU on 20141110 for simplicity of code
+!!
+!!...CALCULATE ENSTROPHY FLUX (it must be done HERE)
+!!...enstrophy flux is
+!!   2 Imag [ w^*(k) k.F(uw) ]  (F(.) means fourier transform)
+!         if (mod(nsteps,ieout).eq.0) then
+!            vx =  2.* (0.0, 1.0)*vy
+!            kx = real(wz)*aimag(vx) - aimag(wz)*real(vx)
+!            if (id.eq.0)  kx (:,1)=0.50*kx (:,1)  
+!            sum1=0.0 
+!            do i = 1,nek          
+!               a = i - 1 + 0.5
+!               ek(i) =sum (kx,mask=(sqrt(k2).ge.a.and.sqrt(k2).lt.a+1) )
+!            enddo
+!            call mpi_reduce(ek, e_t, nek, MPI_REAL,MPI_SUM,0,
+!     +           nallgrp,ierror)
+!            if (id.eq.0) then
+!               write(fin,109) iopath,'enstflx.d'
+!               call movespa(fin,80)
+!               open(82,file=fin,access='append',status='unknown')
+!               write(82, 821) iii,nsteps,time
+!               do i=1,nek
+!                   sum1=sum1+e_t(i)
+!                   write(82, 1002) i, -sum1
+!               end do
+!               close(82)
+!            endif
+!            iii = iii + 1
+!
+!         endif
+!821      format(1x,'#k',3x,'i=',i3,3x,'nsteps=',i6,3x,'time=',f10.4) 
 
 !-------------END NONLINEAR TERM----------
          call dealiasing (vy, k2)
@@ -539,6 +542,8 @@
             time=time+dt
          end if
 
+!---Add the update proccegure here.----
+!
         enddo                     
 
       write(*,991) id
