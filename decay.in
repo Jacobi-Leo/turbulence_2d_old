@@ -1,15 +1,15 @@
-   './dat/'
-   128     ! my
-   1212	  ! iseed_m0, seed for random number generator
-   0.5    ! e0, initinal total energy(new=1) or max vorticity (new=2)
-   40.0   ! ak0, k_d of initial spectrum(new=1):vortex wavenumber(new=2)
-   1.0E-4  ! rnu, normal viscosity
-   0.001  ! alpha, damping coefficient
-   0.50e-4! dt, step size
-   1000   nstep, number of time steps
-   100    ! itout, write k-space vort every itout steps
-   10     ieout, write energy spectrum every ieout steps 
-   1      ! new, 1:randome ini 2: Taylor-Green Vortex 0: if old run
-   10      ! idp, read in vort_k, start writing vort_k at idp+1
+   'dat/'
+   512		! my
+   1212		! iseed_m0, seed for random number generator
+   0.5		! e0, initinal total energy(new=1) or max vorticity (new=2)
+   40.0		! ak0, k_d of initial spectrum(new=1):vortex wavenumber(new=2)
+   1.0E-4		! rnu, normal viscosity
+   0.001		! alpha, damping coefficient
+   0.50e-4		! dt, step size
+   1000		! nstep, number of time steps
+   100		! itout, write k-space vort every itout steps
+   100		! ieout, write energy spectrum every ieout steps 
+   1		! new, 1:randome ini 2: Taylor-Green Vortex 0: if old run
+   10		! idp, read in vort_k, start writing vort_k at idp+1
 
 

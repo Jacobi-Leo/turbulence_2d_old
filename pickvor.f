@@ -14,7 +14,8 @@
         vormin = 0.05*vormax
 
 !...  确定旋涡边界的参数
-        delt  = 0.2
+        !delt  = 0.2
+		delt = 0.5
 
 !...  旋涡的周长最大值为6.28, 即区域的一个边的长度
         crmax = amax1(float(n),256.0)

@@ -4,9 +4,9 @@
       include 'decay.h'
 
       complex,allocatable,dimension(:, :)::vx,vy,wz,owz
-      complex,allocatable,dimension(:, :)::wt, uxt
+      complex,allocatable,dimension(:, :)::wt, uxt, wt2
       real,allocatable,dimension(:, :)::kx,ky,k2,k2e,tmp,tmp1
-      real, allocatable,dimension(:)::wx,wy,ek,e_t 
+      real, allocatable,dimension(:)::wx,wy,ek,e_t
       integer,allocatable,dimension(:)::ipx,ipy         
       integer,allocatable,dimension(:)::iseed
 
@@ -102,12 +102,12 @@
         allocate (owz(my,mmx2) )
         allocate (kx(my,mmx2) )
         allocate (ky(my,mmx2) )
-        allocate (ky(my,mmx2) )
         allocate (k2(my,mmx2) )
         allocate (k2e(my,mmx2) )
         allocate (tmp(my,mmx2) )
         allocate (tmp1(my,mmx2) )
         allocate (wt(mx2,mmy) )
+		allocate (wt2(mx2/2, mx2))
         allocate (uxt(mx2,mmy) )       
         allocate (wx(0:(mx2-1)) )
         allocate (wy(0:(my-1)) )
@@ -118,6 +118,7 @@
         allocate (iseed(nproc) )
 
 !***********************************
+!===output info.txt=========
        if (id.eq.0) then
 
          write(fin,109) iopath,'info.txt'
@@ -148,6 +149,7 @@
           time = 0.0
         endif
         dt_h = 0.5*dt
+
         call wavenumber(kx,ky,k2,k2e,id,0)
 
 !...INITIAL CONDITIONS
@@ -218,6 +220,7 @@
                sx1 = -1.0
             endif
             if(sx2*cy.ge.0.1) then
+               sx2 = 1.0
             elseif(sx2*cy.le.-0.1) then
                sx2 = -1.0
             endif
@@ -289,30 +292,31 @@
         call wavenumber(kx,ky,k2,k2e,id,1)
 
 !!**********************************************************
-!!---Some extra job need to do here to produce the correct spectrum
-!!...WRITE ENERGY SPECTRUM
-!         if (mod(nsteps,ieout).eq.0) then
-!            tmp= wz*conjg(wz) / k2
-!            if (id.eq.0)  tmp(:, 1)=0.50*tmp(:, 1)  
-!            do i=1,nek           
-!                 ek(i)=sum(tmp,mask=(abs(sqrt(k2)-i-0.499999).lt.0.5) )
-!            enddo
-!            call mpi_reduce(ek,e_t,nek,MPI_REAL,MPI_SUM,0,
-!     +                                       nallgrp,ierror)
-!            if (id.eq.0) then
-!             write(fin,109) iopath,'spectrum.d'
-!             call movespa(fin,80)
-!             open(20,file=fin,access='append',status='unknown')
-!             write(20,201) jjj-1,nsteps,time,sum(e_t)
-!             do i=1,nek
-!                 write(20, 1002) i,  e_t(i)
-!             enddo
-!             close(20)
-!            endif    
-!             jjj = jjj + 1
-!         endif
-!201      format(1x,'#k',3x,'j=',i3,3x,'nsteps=',i6,3x,'Time=',f10.4,3x,
-!     +                'Te=',e15.6)
+!---Some extra job need to do here to produce the correct spectrum
+!---to do 1----
+!...WRITE ENERGY SPECTRUM
+         if (mod(nsteps,ieout).eq.0) then
+            tmp= wz*conjg(wz) / k2
+            if (id.eq.0)  tmp(:, 1)=0.50*tmp(:, 1)  
+            do i=1,nek           
+                 ek(i)=sum(tmp,mask=(abs(sqrt(k2)-i-0.499999).lt.0.5) )
+            enddo
+            call mpi_reduce(ek,e_t,nek,MPI_REAL,MPI_SUM,0,
+     +                                       nallgrp,ierror)
+            if (id.eq.0) then
+             write(fin,109) iopath,'spectrum.d'
+             call movespa(fin,80)
+             open(20,file=fin,access='append',status='unknown')
+             write(20,201) jjj-1,nsteps,time,sum(e_t)
+             do i=1,nek
+                 write(20, 1002) i,  e_t(i)
+             enddo
+             close(20)
+            endif    
+             jjj = jjj + 1
+         endif
+201      format(1x,'#k',3x,'j=',i3,3x,'nsteps=',i6,3x,'Time=',f10.4,3x,
+     +                'Te=',e15.6)
    
 !...STORE VORTICITY TEMPORARILY
          tmp = real(wz)
@@ -333,10 +337,15 @@
          call newfft (vx,uxt, isign,ipx,ipy,wx,wy,id,nallgrp) 
          call newfft (wz,wt, isign,ipx,ipy,wx,wy,id,nallgrp) 
 
+		 !===== to do 3=============
+		 !===DONE===
+		 forall (i=1:mx2/2, j=1:mx2)
+			 wt2(i,j) = wt(i,j)
+		 end forall
 
-         if(nsteps.eq.ieout) call pickvor0(wt,my,id)
+         if(nsteps.eq.ieout) call pickvor0(wt2,mx2,id)
          if(mod(nsteps,ieout).eq.0) then
-          call pickvor(wt,my)
+          call pickvor(wt2,mx2)
          endif
 
 !...Calculate flatness of vorticity.................................
@@ -543,7 +552,15 @@
          end if
 
 !---Add the update proccegure here.----
+!---to do 2 ===DONE===
 !
+         isign = -1
+         call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
+		 call update (wt, my)
+		 isign = 1
+         call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
+		 call symmetrize (wz, id)
+		 !call dealiasing (wz, k2)
         enddo                     
 
       write(*,991) id
@@ -779,45 +796,45 @@
       integer i,j,k,js,j1,ks,k1, l
  
       if (nproc.gt.1) then
-        isize = mmy*mmx2
-        do i = 1,nproc-1
-         nzp=mod(id+i,nproc)
-         nzm=mod(id-i+nproc,nproc)
-         js = nzp*mmy
-
-         do j = 1,mmy
-              j1=js+j
-              tmp1( j, : ) = ux ( j1, :)
-         enddo
-         call mpi_isend(tmp1, isize, MPI_COMPLEX, nzp, i,
-     +        nallgrp,req(1),ierror)
-         call mpi_irecv(tmp2, isize, MPI_COMPLEX, nzm, i,
-     +        nallgrp,req(2),ierror)
-         call mpi_waitall (2,req,status,ierror)
-       
-         ks = nzm*mmx2
-         do k = 1, mmx2
-              k1 = ks+k
-              tmp( :, k1)= tmp2 ( :, k)
-         enddo
-       enddo
-
-!     does (id,id) spot from ux to tmp so can transpose to uxt
-
-       ks = id*mmx2
-       js = id*mmy
-         k1 = ks + k
-         do j = 1,mmy
-            j1 = js + j
-            tmp( j, k1 ) = ux ( j1, k )
-         enddo
-       enddo
-
-         do k=1, mmy
-            do j=1, mx2
-                uxt ( j, k ) = tmp(k, j )
-            enddo
-         enddo
+!        isize = mmy*mmx2
+!        do i = 1,nproc-1
+!         nzp=mod(id+i,nproc)
+!         nzm=mod(id-i+nproc,nproc)
+!         js = nzp*mmy
+!
+!         do j = 1,mmy
+!              j1=js+j
+!              tmp1( j, : ) = ux ( j1, :)
+!         enddo
+!         call mpi_isend(tmp1, isize, MPI_COMPLEX, nzp, i,
+!     +        nallgrp,req(1),ierror)
+!         call mpi_irecv(tmp2, isize, MPI_COMPLEX, nzm, i,
+!     +        nallgrp,req(2),ierror)
+!         call mpi_waitall (2,req,status,ierror)
+!       
+!         ks = nzm*mmx2
+!         do k = 1, mmx2
+!              k1 = ks+k
+!              tmp( :, k1)= tmp2 ( :, k)
+!         enddo
+!       enddo
+!
+!!     does (id,id) spot from ux to tmp so can transpose to uxt
+!
+!       ks = id*mmx2
+!       js = id*mmy
+!         k1 = ks + k
+!         do j = 1,mmy
+!            j1 = js + j
+!            tmp( j, k1 ) = ux ( j1, k )
+!         enddo
+!       enddo
+!
+!         do k=1, mmy
+!            do j=1, mx2
+!                uxt ( j, k ) = tmp(k, j )
+!            enddo
+!         enddo
        
        else if (nproc.eq.1) then
          do j=1, mx2
@@ -894,3 +911,49 @@
 
       return
       end
+!--------------------------------------------
+      subroutine update(c, my)
+      complex,dimension(my, my/2)::c
+	  real,dimension(my, my) :: x
+	  
+	  !do i=1,my
+	  !    do j=1,my/2
+	  !  	  x(i,2*j-1)=real(c(i,j))
+	  !  	  x(i,2*j) = aimag(c(i,j))
+	  !    enddo
+	  !enddo
+
+	  forall (i=1:my, j=1:my/2)
+		  x(i,2*j-1) = real(c(i,j))
+		  x(i,2*j) = aimag(c(i,j))
+	  end forall
+
+	  !=============================
+	  ! Do the update job here
+	  !	
+	  do i=1,my/2
+	      do j=1,my/2
+	    	  x(i+my/2,j) = -x(i, my/2-j)
+	      enddo
+	  enddo
+
+	  do i=my/2+1,my
+	      do j=1,my
+	    	  x(i, j) = x(i-my/2, j)
+	      enddo
+	  enddo
+	  !
+	  ! End of update job
+	  !==============================
+
+	  !do i=1,my
+	  !    do j=1,my/2
+	  !  	  c(i,j) = cmplx(x(2*i-1,j), x(2*i,j))
+	  !    enddo
+	  !enddo
+
+	  forall (i=1:my, j=1:my/2)
+		  c(i,j) = cmplx(x(2*i-1,j), x(2*i,j))
+	  end forall
+	  
+	  end subroutine update

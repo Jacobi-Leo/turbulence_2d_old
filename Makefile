@@ -23,14 +23,15 @@ mpi0.o: mpi0.f
 	$(FC) $(FCFLAGS) mpi0.f 
 
 run: main decay.in
+	rm -r dat/
 	mkdir ./dat/
 	./main
 
 clean:
-	rm *.o *.mod
+	rm *.o
 
 purge:
 	rm -r dat/
-	rm main *.o *.mod 
+	rm main *.o
 
 
