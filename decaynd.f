@@ -170,7 +170,7 @@
         call mpi_bcast(iseed,nproc,MPI_INTEGER,0,nallgrp,ierror)
         i = iseed(id+1)
         !num =  drand(i)
-		call RANDOM_NUMBER(i)
+		call RANDOM_SEED(i)
 		call RANDOM_NUMBER(num)
 
         call gaussian(vx)
