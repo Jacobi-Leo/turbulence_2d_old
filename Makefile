@@ -3,7 +3,7 @@ FCFLAGS = -ggdb -c \
 		  -Wall -Wsurprising -Wextra -Wunderflow \
 		  -fbacktrace \
 		  -std=legacy \
-		  #-fdefault-real-8 -fdefault-double-8 \
+		  #fdefault-real-8 -fdefault-double-8 \
 		  
 FLFLAGS = -ggdb -fbacktrace
 
@@ -23,7 +23,6 @@ mpi0.o: mpi0.f
 	$(FC) $(FCFLAGS) mpi0.f 
 
 run: main decay.in
-	rm -r dat/
 	mkdir ./dat/
 	./main
 
