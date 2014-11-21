@@ -32,5 +32,6 @@ clean:
 purge:
 	rm -r dat/
 	rm main *.o
+	rm *.debug.out
 
 

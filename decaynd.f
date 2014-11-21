@@ -283,6 +283,7 @@
         endif
 
         if (mod(nsteps,100).eq.0.or.nsteps.le.100) then
+	    !if(.true.)  then 
             timer2 = mpi_wtime()
             if(id.eq.0) write(*,19) nsteps,time,timer2-timer1
             timer1 = timer2
@@ -344,10 +345,28 @@
 			 wt2(i,j) = wt(i,j)
 		 end forall
 
+		 !== The reversioned data by LIU to  calculate the up-right
+		 !== quater of the domain. ==
+		 !
          if(nsteps.eq.ieout) call pickvor0(wt2,mx2,id)
          if(mod(nsteps,ieout).eq.0) then
+			 ! *** to check why some cases fail ***
+			 if(nsteps.eq.250) then
+				 call outputvorticity(wt)
+			 end if
+			 ! *** end ***
+			 write(*,*) "Enter subroutine pickvor at ", nsteps, "th step."
           call pickvor(wt2,mx2)
+		  write(*,*) "Exit subroutine pickvor. "
          endif
+
+		 !== The original code to calculate the whole domain ==
+		 !
+         !if(nsteps.eq.ieout) call pickvor0(wt,my,id)
+         !if(mod(nsteps,ieout).eq.0) then
+         ! call pickvor(wt,my)
+         !endif
+
 
 !...Calculate flatness of vorticity.................................
 !..  vor(1): < vor**2 >         vor(2): < vor**4 >
@@ -557,7 +576,7 @@
 !
          isign = -1
          call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
-		 call update (wt, my)
+		 call update (wt, my, mx2)
 		 isign = 1
          call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
 		 call symmetrize (wz, id)
@@ -913,48 +932,79 @@
       return
       end
 !--------------------------------------------
-      subroutine update(c, my)
-      complex,dimension(my, my/2)::c
-	  real,dimension(my, my) :: x
-	  
-	  !do i=1,my
-	  !    do j=1,my/2
-	  !  	  x(i,2*j-1)=real(c(i,j))
-	  !  	  x(i,2*j) = aimag(c(i,j))
-	  !    enddo
-	  !enddo
+      subroutine update(c, my, mx2)
+		  complex,dimension(my, mx2)::c
+		  real,dimension(my, my) :: x
 
-	  forall (i=1:my, j=1:my/2)
-		  x(i,2*j-1) = real(c(i,j))
-		  x(i,2*j) = aimag(c(i,j))
-	  end forall
+		  !do i=1,my
+		  !    do j=1,my/2
+		  !  	  x(i,2*j-1)=real(c(i,j))
+		  !  	  x(i,2*j) = aimag(c(i,j))
+		  !    enddo
+		  !enddo
 
-	  !=============================
-	  ! Do the update job here
-	  !	
-	  do i=1,my/2
-	      do j=1,my/2
-	    	  x(i+my/2,j) = -x(i, my/2-j)
-	      enddo
-	  enddo
+		  forall (i=1:my, j=1:my/2)
+			  x(i,2*j-1) = real(c(i,j))
+			  x(i,2*j) = aimag(c(i,j))
+		  end forall
 
-	  do i=my/2+1,my
-	      do j=1,my
-	    	  x(i, j) = x(i-my/2, j)
-	      enddo
-	  enddo
-	  !
-	  ! End of update job
-	  !==============================
+		  !=============================
+		  ! Do the update job here
+		  !	
+		  do i=1,my/2
+			  do j=my/2+1, my
+				  x(i,j) = -x(my/2-i, j-my/2)
+			  enddo
+		  enddo
 
-	  !do i=1,my
-	  !    do j=1,my/2
-	  !  	  c(i,j) = cmplx(x(2*i-1,j), x(2*i,j))
-	  !    enddo
-	  !enddo
+		  do i=my/2+1,my
+			  do j=1,my/2
+				  x(i, j) = -x(i-my/2, my/2-j)
+			  enddo
+		  enddo
 
-	  forall (i=1:my, j=1:my/2)
-		  c(i,j) = cmplx(x(2*i-1,j), x(2*i,j))
-	  end forall
-	  
+		  do i=my/2+1, my
+			  do j=my/2+1, my
+				  x(i, j) = x(i-my/2, j-my/2)
+			  end do
+		  end do
+		  !
+		  ! End of update job
+		  !==============================
+
+		  !do i=1,my
+		  !    do j=1,my/2
+		  !  	  c(i,j) = cmplx(x(2*i-1,j), x(2*i,j))
+		  !    enddo
+		  !enddo
+
+		  forall (i=1:my, j=1:my/2)
+			  c(i,j) = cmplx(x(i,2*j-1), x(i,2*j))
+		  end forall
+
 	  end subroutine update
+
+	  subroutine outputvorticity (c)
+		  include "decay.h"
+		  integer :: n, m, i, j
+		  complex, dimension(mx2, mx2/2) :: c
+		  real, dimension(mx2, mx2) :: x
+		  character(len=18) :: filename
+		  character(len=20) :: formatstr="(???(1X, E20.13))"
+
+		  n = mx2
+		  m = n / 2
+
+		  filename = "vortoutm.debug.out"
+		  write(formatstr(2:4), '(i3)') n
+		  open(unit=100, file=filename, access='append')
+
+		  forall(i=1:n, j=1:m)
+			  x(i, 2*j-1) = real(c(i,j))
+			  x(i, 2*j) = aimag(c(i,j))
+		  end forall
+
+		  !write(100, *) "## The ", istep, "th vorticity."
+		  write(100, fmt=formatstr) ((x(i,j), j=1,n), i=1,n)
+
+	  end subroutine outputvorticity
