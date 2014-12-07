@@ -3,6 +3,7 @@ FCFLAGS = -ggdb -c \
 		  -Wall -Wsurprising -Wextra -Wunderflow \
 		  -fbacktrace \
 		  -std=legacy \
+		  #-O2 \
 		  #fdefault-real-8 -fdefault-double-8 \
 		  
 FLFLAGS = -ggdb -fbacktrace
@@ -23,6 +24,7 @@ mpi0.o: mpi0.f
 	$(FC) $(FCFLAGS) mpi0.f 
 
 run: main decay.in
+	if [ -e dat ]; then rm -r dat/; fi
 	mkdir ./dat/
 	./main
 
@@ -32,6 +34,5 @@ clean:
 purge:
 	rm -r dat/
 	rm main *.o
-	rm *.debug.out
 
 

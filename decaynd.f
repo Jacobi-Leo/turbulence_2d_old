@@ -267,6 +267,14 @@
       timer1 = mpi_wtime()
       do istep = 0, nstep
 
+         isign = -1
+         call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
+		 call update (wt, my, mx2)
+		 isign = 1
+         call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
+		 call symmetrize (wz, id)
+		 call dealiasing (wz, k2)
+
         nsteps = nsteps0 + istep
 
 !....If the computation is started from initial value, then the first
@@ -341,31 +349,35 @@
 
 		 !===== to do 3=============
 		 !===DONE===
-		 forall (i=1:mx2/2, j=1:mx2)
-			 wt2(i,j) = wt(i,j)
-		 end forall
-
-		 !== The reversioned data by LIU to  calculate the up-right
-		 !== quater of the domain. ==
+		 !forall (i=1:mx2/2, j=1:mx2)
+		 !    wt2(i,j) = wt(i,j)
+		 !end forall
 		 !
-         if(nsteps.eq.ieout) call pickvor0(wt2,mx2,id)
-         if(mod(nsteps,ieout).eq.0) then
-			 ! *** to check why some cases fail ***
-			 if(nsteps.eq.250) then
-				 call outputvorticity(wt)
-			 end if
-			 ! *** end ***
-			 write(*,*) "Enter subroutine pickvor at ", nsteps, "th step."
-          call pickvor(wt2,mx2)
-		  write(*,*) "Exit subroutine pickvor. "
-         endif
+		 !!== The reversioned data by LIU to  calculate the up-right
+		 !!== quater of the domain. ==
+		 !!
+         !if(nsteps.eq.ieout) call pickvor0(wt2,mx2,id)
+         !if(mod(nsteps,ieout).eq.0) then
+		 !    ! *** to check why some cases fail ***
+		 !    if(nsteps.eq.250) then
+		 !   	 call outputvorticity(wt)
+		 !    end if
+		 !    ! *** end ***
+		 !    write(*,*) "Enter subroutine pickvor at ", nsteps, "th step."
+         ! call pickvor(wt2,mx2)
+		 ! write(*,*) "Exit subroutine pickvor. "
+         !endif
 
 		 !== The original code to calculate the whole domain ==
-		 !
-         !if(nsteps.eq.ieout) call pickvor0(wt,my,id)
-         !if(mod(nsteps,ieout).eq.0) then
-         ! call pickvor(wt,my)
-         !endif
+		 
+         if(nsteps.eq.ieout) call pickvor0(wt,my,id)
+         if(mod(nsteps,ieout).eq.0) then
+		  write(*,*) 
+		  write(*,*) 'Enter subroutine pickvor at nsteps = ', nsteps
+          call pickvor(wt,my)
+		  write(*,*) 'Exit pickvor.'
+		  call outputvorticity(wt)
+         endif
 
 
 !...Calculate flatness of vorticity.................................
@@ -507,37 +519,37 @@
 !...RECOVER VORTICITY
            wz = cmplx( tmp,tmp1)
 
-!!---Commented out by LIU on 20141110 for simplicity of code
-!!
-!!...CALCULATE ENSTROPHY FLUX (it must be done HERE)
-!!...enstrophy flux is
-!!   2 Imag [ w^*(k) k.F(uw) ]  (F(.) means fourier transform)
-!         if (mod(nsteps,ieout).eq.0) then
-!            vx =  2.* (0.0, 1.0)*vy
-!            kx = real(wz)*aimag(vx) - aimag(wz)*real(vx)
-!            if (id.eq.0)  kx (:,1)=0.50*kx (:,1)  
-!            sum1=0.0 
-!            do i = 1,nek          
-!               a = i - 1 + 0.5
-!               ek(i) =sum (kx,mask=(sqrt(k2).ge.a.and.sqrt(k2).lt.a+1) )
-!            enddo
-!            call mpi_reduce(ek, e_t, nek, MPI_REAL,MPI_SUM,0,
-!     +           nallgrp,ierror)
-!            if (id.eq.0) then
-!               write(fin,109) iopath,'enstflx.d'
-!               call movespa(fin,80)
-!               open(82,file=fin,access='append',status='unknown')
-!               write(82, 821) iii,nsteps,time
-!               do i=1,nek
-!                   sum1=sum1+e_t(i)
-!                   write(82, 1002) i, -sum1
-!               end do
-!               close(82)
-!            endif
-!            iii = iii + 1
+!---Commented out by LIU on 20141110 for simplicity of code
 !
-!         endif
-!821      format(1x,'#k',3x,'i=',i3,3x,'nsteps=',i6,3x,'time=',f10.4) 
+!...CALCULATE ENSTROPHY FLUX (it must be done HERE)
+!...enstrophy flux is
+!   2 Imag [ w^*(k) k.F(uw) ]  (F(.) means fourier transform)
+         if (mod(nsteps,ieout).eq.0) then
+            vx =  2.* (0.0, 1.0)*vy
+            kx = real(wz)*aimag(vx) - aimag(wz)*real(vx)
+            if (id.eq.0)  kx (:,1)=0.50*kx (:,1)  
+            sum1=0.0 
+            do i = 1,nek          
+               a = i - 1 + 0.5
+               ek(i) =sum (kx,mask=(sqrt(k2).ge.a.and.sqrt(k2).lt.a+1) )
+            enddo
+            call mpi_reduce(ek, e_t, nek, MPI_REAL,MPI_SUM,0,
+     +           nallgrp,ierror)
+            if (id.eq.0) then
+               write(fin,109) iopath,'enstflx.d'
+               call movespa(fin,80)
+               open(82,file=fin,access='append',status='unknown')
+               write(82, 821) iii,nsteps,time
+               do i=1,nek
+                   sum1=sum1+e_t(i)
+                   write(82, 1002) i, -sum1
+               end do
+               close(82)
+            endif
+            iii = iii + 1
+
+         endif
+821      format(1x,'#k',3x,'i=',i3,3x,'nsteps=',i6,3x,'time=',f10.4) 
 
 !-------------END NONLINEAR TERM----------
          call dealiasing (vy, k2)
@@ -580,7 +592,7 @@
 		 isign = 1
          call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
 		 call symmetrize (wz, id)
-		 !call dealiasing (wz, k2)
+		 call dealiasing (wz, k2)
         enddo                     
 
       write(*,991) id
@@ -944,42 +956,63 @@
 		  !enddo
 
 		  forall (i=1:my, j=1:my/2)
-			  x(i,2*j-1) = real(c(i,j))
-			  x(i,2*j) = aimag(c(i,j))
+		      x(i,2*j-1) = real(c(i,j))
+		      x(i,2*j) = aimag(c(i,j))
 		  end forall
 
 		  !=============================
 		  ! Do the update job here
 		  !	
-		  do i=1,my/2
-			  do j=my/2+1, my
-				  x(i,j) = -x(my/2-i, j-my/2)
-			  enddo
-		  enddo
 
-		  do i=my/2+1,my
-			  do j=1,my/2
-				  x(i, j) = -x(i-my/2, my/2-j)
-			  enddo
-		  enddo
+		  !!--- Update method 1, two directions inversed.---
+		  !do i=1,my/2
+		  !    do j=my/2+1, my
+		  !  	  x(i,j) = -x(my/2-i+1, j-my/2)
+		  !    enddo
+		  !enddo
+
+		  !do i=my/2+1,my
+		  !    do j=1,my/2
+		  !  	  x(i, j) = -x(i-my/2, my/2-j+1)
+		  !    enddo
+		  !enddo
+
+		  !do i=my/2+1, my
+		  !    do j=my/2+1, my
+		  !  	  x(i, j) = -x(i-my/2, my-j+1+my/2)
+		  !    end do
+		  !end do
+		  !!--- End of method 1 ---
+
+		  !--- Update method 2, one direction inversed. ---
+		  !--- End of methtod 2 ---
+
+		  !--- Update method 3, no inverse. ---
+		  do i=1,my/2
+		      do j=my/2+1, my
+		    	  x(i,j) = x(i,j-my/2)
+		      end do
+		  end do
 
 		  do i=my/2+1, my
-			  do j=my/2+1, my
-				  x(i, j) = x(i-my/2, j-my/2)
-			  end do
+		      do j=1,my
+		    	  x(i,j) = x(i-my/2, j)
+		      end do
 		  end do
+		  !--- End of method 3 ---
+
 		  !
 		  ! End of update job
 		  !==============================
 
 		  !do i=1,my
 		  !    do j=1,my/2
-		  !  	  c(i,j) = cmplx(x(2*i-1,j), x(2*i,j))
+		  !  	 c(i,j) = cmplx(x(i,2*j-1), x(i,2*j))
 		  !    enddo
 		  !enddo
 
 		  forall (i=1:my, j=1:my/2)
-			  c(i,j) = cmplx(x(i,2*j-1), x(i,2*j))
+		      c(i,j) = cmplx(x(i,2*j-1), x(i,2*j))
 		  end forall
 
 	  end subroutine update
@@ -987,17 +1020,24 @@
 	  subroutine outputvorticity (c)
 		  include "decay.h"
 		  integer :: n, m, i, j
-		  complex, dimension(mx2, mx2/2) :: c
-		  real, dimension(mx2, mx2) :: x
-		  character(len=18) :: filename
+		  !complex, dimension(mx2, mx2/2) :: c
+		  !real, dimension(mx2, mx2) :: x
+		  complex, dimension(my, mx2) :: c
+		  real, dimension(my, my) :: x
+		  character(len=100) :: filename
 		  character(len=20) :: formatstr="(???(1X, E20.13))"
+		  common /iopathc/ iopath
+		  
+		  write(filename,1) iopath,nsteps
+  1		  format(1x,a50,'vortfield',i6.6)
+          call movespa(filename, 100)
+		  !n = mx2
+		  !m = n / 2
+		  n = my
+		  m = n/2
 
-		  n = mx2
-		  m = n / 2
-
-		  filename = "vortoutm.debug.out"
 		  write(formatstr(2:4), '(i3)') n
-		  open(unit=100, file=filename, access='append')
+		  open(unit=100, file=filename, status='new')
 
 		  forall(i=1:n, j=1:m)
 			  x(i, 2*j-1) = real(c(i,j))
@@ -1006,5 +1046,6 @@
 
 		  !write(100, *) "## The ", istep, "th vorticity."
 		  write(100, fmt=formatstr) ((x(i,j), j=1,n), i=1,n)
+		  close(100)
 
 	  end subroutine outputvorticity

@@ -164,6 +164,7 @@
         real vor(n,n)
         common /vortexdat/ ii0,jj0,gamv,arev,radv,epsv
         common /vortexbox/ ii,jj,ii1,jj1
+		integer :: itest
 
 !... 首先假设此极值点不是旋涡结构，如果程序中途返回，则表明不是旋涡。
         key = 0
@@ -171,6 +172,8 @@
 
         ii = ii0
         jj = jj0
+
+		itest = 0
 
 !... 沿+x方向搜索第一个边界点 
 10      continue           
@@ -212,6 +215,7 @@
 !... 1. 判断右转90度的点是否属于此旋涡
         iit = mod(ii+idy-1+n,n)+1
         jjt = mod(jj-idx-1+n,n)+1
+		!itest = itest + 1
         vorijm = vor(iit,jjt)/vormax
         if(vorijm.gt.delt) then
 !......属于：
@@ -236,8 +240,10 @@
 !... 右旋90度的点不属于此旋涡，判断当前方向的下一个点
         iit = mod(ii+idx-1+n,n)+1
         jjt = mod(jj+idy-1+n,n)+1
+		itest = itest + 1
         vorijm = vor(iit,jjt)/vormax
         if(vorijm.gt.delt) then
+			itest = 0
 !............. 属于：记录此点，并沿同方向继续搜索
                ii = iit
                jj = jjt
@@ -251,6 +257,11 @@
                goto 21
         endif
 !... 当前方向的下一个点不属于此旋涡，当前方向左转90度，继续搜索
+        if(itest .gt. n*4) then
+		    !write(*,*) 
+			!write(*,*) 'There is a bug...'
+			return
+		endif
         idxyt = idx
         idx = -idy
         idy = idxyt
