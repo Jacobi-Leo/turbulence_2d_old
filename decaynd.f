@@ -267,13 +267,13 @@
       timer1 = mpi_wtime()
       do istep = 0, nstep
 
-         isign = -1
-         call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
-		 call update (wt, my, mx2)
-		 isign = 1
-         call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
-		 call symmetrize (wz, id)
-		 call dealiasing (wz, k2)
+         !isign = -1
+         !call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
+		 !call update (wt, my, mx2)
+		 !isign = 1
+         !call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
+		 !call symmetrize (wz, id)
+		 !call dealiasing (wz, k2)
 
         nsteps = nsteps0 + istep
 
@@ -325,7 +325,7 @@
             endif    
              jjj = jjj + 1
          endif
-201      format(1x,'#k',3x,'j=',i3,3x,'nsteps=',i6,3x,'Time=',f10.4,3x,
+201      format(1x,'#k',3x,'j=',i5,3x,'nsteps=',i9,3x,'Time=',f10.4,3x,
      +                'Te=',e15.6)
    
 !...STORE VORTICITY TEMPORARILY
@@ -360,7 +360,7 @@
          !if(mod(nsteps,ieout).eq.0) then
 		 !    ! *** to check why some cases fail ***
 		 !    if(nsteps.eq.250) then
-		 !   	 call outputvorticity(wt)
+		 !   	 call outputvorticity(wt, 0)
 		 !    end if
 		 !    ! *** end ***
 		 !    write(*,*) "Enter subroutine pickvor at ", nsteps, "th step."
@@ -376,7 +376,7 @@
 		  write(*,*) 'Enter subroutine pickvor at nsteps = ', nsteps
           call pickvor(wt,my)
 		  write(*,*) 'Exit pickvor.'
-		  call outputvorticity(wt)
+		  call outputvorticity(wt,0)
          endif
 
 
@@ -588,7 +588,9 @@
 !
          isign = -1
          call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
+		 !call outputvorticity(wt, 2)
 		 call update (wt, my, mx2)
+		 !call outputvorticity(wt, 1)
 		 isign = 1
          call newfft (wz, wt, isign,ipx,ipy,wx,wy,id,nallgrp)  
 		 call symmetrize (wz, id)
@@ -945,7 +947,7 @@
       end
 !--------------------------------------------
       subroutine update(c, my, mx2)
-		  complex,dimension(my, mx2)::c
+		  complex,dimension(mx2, my)::c
 		  real,dimension(my, my) :: x
 
 		  !do i=1,my
@@ -956,50 +958,67 @@
 		  !enddo
 
 		  forall (i=1:my, j=1:my/2)
-		      x(i,2*j-1) = real(c(i,j))
-		      x(i,2*j) = aimag(c(i,j))
+		      x(i,2*j-1) = real(c(j,i))
+		      x(i,2*j) = aimag(c(j,i))
 		  end forall
 
 		  !=============================
 		  ! Do the update job here
 		  !	
 
-		  !!--- Update method 1, two directions inversed.---
-		  !do i=1,my/2
-		  !    do j=my/2+1, my
-		  !  	  x(i,j) = -x(my/2-i+1, j-my/2)
-		  !    enddo
-		  !enddo
-
-		  !do i=my/2+1,my
-		  !    do j=1,my/2
-		  !  	  x(i, j) = -x(i-my/2, my/2-j+1)
-		  !    enddo
-		  !enddo
-
-		  !do i=my/2+1, my
-		  !    do j=my/2+1, my
-		  !  	  x(i, j) = -x(i-my/2, my-j+1+my/2)
-		  !    end do
-		  !end do
-		  !!--- End of method 1 ---
-
-		  !--- Update method 2, one direction inversed. ---
-		  !--- End of methtod 2 ---
-
-		  !--- Update method 3, no inverse. ---
+		  !--- Update method 1, two directions inversed.---
 		  do i=1,my/2
 		      do j=my/2+1, my
-		    	  x(i,j) = x(i,j-my/2)
-		      end do
-		  end do
+		    	  x(i,j) = -x(my/2-i+1, j-my/2)
+		      enddo
+		  enddo
+
+		  do i=my/2+1,my
+		      do j=1,my/2
+		    	  x(i, j) = -x(i-my/2, my/2-j+1)
+		      enddo
+		  enddo
 
 		  do i=my/2+1, my
-		      do j=1,my
-		    	  x(i,j) = x(i-my/2, j)
+		      do j=my/2+1, my
+		    	  x(i, j) = -x(i-my/2, my-j+1+my/2)
 		      end do
 		  end do
-		  !--- End of method 3 ---
+		  !--- End of method 1 ---
+
+		  !!--- Update method 2, no inversed, shrinked. ---
+		  !do i=1,my/2
+		  !    do j=1,my/2
+		  !  	  x(i,j) = x(2*i-1, 2*j-1)
+		  !    end do
+		  !end do
+
+		  !do i=1,my/2
+		  !    do j=my/2+1, my
+		  !  	  x(i,j) = x(i,j-my/2)
+		  !    end do
+		  !end do
+
+		  !do i=my/2+1, my
+		  !    do j=1,my
+		  !  	  x(i,j) = x(i-my/2, j)
+		  !    end do
+		  !end do
+		  !!--- End of methtod 2 ---
+
+		  !!--- Update method 3, no inverse. ---
+		  !do i=1,my/2
+		  !    do j=my/2+1, my
+		  !  	  x(i,j) = x(i,j-my/2)
+		  !    end do
+		  !end do
+
+		  !do i=my/2+1, my
+		  !    do j=1,my
+		  !  	  x(i,j) = x(i-my/2, j)
+		  !    end do
+		  !end do
+		  !!--- End of method 3 ---
 
 		  !
 		  ! End of update job
@@ -1012,36 +1031,45 @@
 		  !enddo
 
 		  forall (i=1:my, j=1:my/2)
-		      c(i,j) = cmplx(x(i,2*j-1), x(i,2*j))
+		      c(j,i) = cmplx(x(i,2*j-1), x(i,2*j))
 		  end forall
 
 	  end subroutine update
 
-	  subroutine outputvorticity (c)
+	  subroutine outputvorticity (c,flag)
 		  include "decay.h"
 		  integer :: n, m, i, j
+		  integer :: flag
 		  !complex, dimension(mx2, mx2/2) :: c
 		  !real, dimension(mx2, mx2) :: x
-		  complex, dimension(my, mx2) :: c
+		  complex, dimension(mx2, my) :: c
 		  real, dimension(my, my) :: x
 		  character(len=100) :: filename
-		  character(len=20) :: formatstr="(???(1X, E20.13))"
+		  character(len=20) :: formatstr="(????(1X, E20.13))"
 		  common /iopathc/ iopath
 		  
-		  write(filename,1) iopath,nsteps
+		  if(flag .eq. 0) then
+			  write(filename,1) iopath,nsteps
+		  elseif(flag .eq. 1) then
+			  write(filename,2) iopath,nsteps
+		  elseif(flag .eq. 2) then
+			  write(filename,3) iopath,nsteps
+		  endif
   1		  format(1x,a50,'vortfield',i6.6)
+  2		  format(1x,a50,'vortfielddebug',i6.6)
+  3		  format(1x,a50,'vortfielddebug_b_',i6.6)
           call movespa(filename, 100)
 		  !n = mx2
 		  !m = n / 2
 		  n = my
 		  m = n/2
 
-		  write(formatstr(2:4), '(i3)') n
+		  write(formatstr(2:5), '(i4)') n
 		  open(unit=100, file=filename, status='new')
 
 		  forall(i=1:n, j=1:m)
-			  x(i, 2*j-1) = real(c(i,j))
-			  x(i, 2*j) = aimag(c(i,j))
+		      x(i, 2*j-1) = real(c(j,i))
+		      x(i, 2*j) = aimag(c(j,i))
 		  end forall
 
 		  !write(100, *) "## The ", istep, "th vorticity."

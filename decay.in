@@ -6,9 +6,9 @@
    1.0E-4		! rnu, normal viscosity
    0.001		! alpha, damping coefficient
    0.50e-4		! dt, step size
-   300		! nstep, number of time steps
-   100		! itout, write k-space vort every itout steps
-   10		! ieout, write energy spectrum every ieout steps 
+   100000		! nstep, number of time steps
+   1000		! itout, write k-space vort every itout steps
+   100		! ieout, write energy spectrum every ieout steps 
    1		! new, 1:randome ini 2: Taylor-Green Vortex 0: if old run
    10		! idp, read in vort_k, start writing vort_k at idp+1
 

@@ -1,12 +1,12 @@
 FC = gfortran
-FCFLAGS = -ggdb -c \
-		  -Wall -Wsurprising -Wextra -Wunderflow \
-		  -fbacktrace \
+FCFLAGS = -c \
 		  -std=legacy \
-		  #-O2 \
-		  #fdefault-real-8 -fdefault-double-8 \
+		  -O2 \
+		  #-Wall -Wsurprising -Wextra -Wunderflow \
+		  -fdefault-real-8 -fdefault-double-8 \
+		  -fbacktrace -ggdb\
 		  
-FLFLAGS = -ggdb -fbacktrace
+FLFLAGS = #-ggdb -fbacktrace
 
 main: decaynd.o fft1d.o mpi0.o pickvor.o ndraw.o
 	$(FC) $(FLFLAGS) -o main *.o
