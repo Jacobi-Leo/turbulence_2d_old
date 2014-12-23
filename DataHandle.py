@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import matplotlib.pyplot as plt
 
 fspec = open("spectrum.d")
 tmp = []
@@ -28,4 +29,10 @@ while True:
 
 fspec.close()
 
-
+#plt.plot(time, energy)
+#plt.xscale("log")
+#plt.yscale("log")
+#plt.show()
+#plt.close()
+plt.plot(wavenum, spectrum[400])
+plt.show()
