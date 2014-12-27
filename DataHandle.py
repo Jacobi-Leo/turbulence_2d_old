@@ -4,7 +4,7 @@ import numpy as np
 import scipy.interpolate as sip
 import matplotlib.pyplot as plt
 import os
-nstep = 9000
+nstep = 90
 
 if 'info.txt' in [f for f in os.listdir('.') if os.path.isfile(f)]:
     prefix = os.getcwd() + '/'
@@ -21,6 +21,7 @@ def readindata():
     n = int(info[1].split()[1])
     ieout = int(info[4].split()[5])
 readindata()
+nstep = nstep * ieout
 
 plt.close('all')
 
