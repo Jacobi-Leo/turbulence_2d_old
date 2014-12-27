@@ -32,7 +32,7 @@
       nallgrp = mpi_comm_world
       call mpi_get_processor_name(name,resultlen,ierror)
       write(*,98) id,name,resultlen
-98    format(1x,'myid=',i4,4x,'name=',a20,4x,'resultlen=',i2)
+98    format(1x,'myid=',1x,i4,4x,'name=',a20,4x,'resultlen=',i2)
 
       if (id.eq.0)  then              
         open(1,file='decay.in',status='old') 
@@ -127,12 +127,12 @@
              write(70,701) nproc,my,iseed_m0,e0,ak0,rnu,alpha,dt,nstep,
      1                     itout,ieout,new,idp,nek,iopath
          close(70)
-701      format(1x,'nproc=',i3,/1x,'my=',i4,4x,'iseed_m0=',i10,
+701      format(1x,'nproc=',i4,/1x,'my=',i5,4x,'iseed_m0=',i10,
      1         /1x,'e0=',f10.2,4x,'ak0=',f10.2,
      1         /1x,'rnu=',e15.6,4x,'alpha=',e15.6,4x,'dt=',e15.6,
      1         /1x,'nstep=',i10,4x,'itout=',i5,4x,'ieout=',i5,
-     1         /1x,'new=',i2,4x,'idp=',i3,5x,'nek=',i4,
-     1         /1x,'iopath=',a60)
+     1         /1x,'new=',i2,4x,'idp=',i3,5x,'nek=',i5,
+     1         /1x,'iopath=',1x,a60)
        endif
 109    format(1x,a50,a)
 
@@ -325,8 +325,8 @@
             endif    
              jjj = jjj + 1
          endif
-201      format(1x,'#k',3x,'j=',i5,3x,'nsteps=',i9,3x,'Time=',f10.4,3x,
-     +                'Te=',e15.6)
+201      format(1x,'#k',3x,'j=',1x,i5,3x,'nsteps=',1x,i9,3x,
+     +                'Time=',1x,f10.4,3x,'Te=',1x,e15.6)
    
 !...STORE VORTICITY TEMPORARILY
          tmp = real(wz)
@@ -549,7 +549,7 @@
             iii = iii + 1
 
          endif
-821      format(1x,'#k',3x,'i=',i3,3x,'nsteps=',i6,3x,'time=',f10.4) 
+821      format(1x,'#k',3x,'i=',i4,3x,'nsteps=',i6,3x,'time=',f10.4) 
 
 !-------------END NONLINEAR TERM----------
          call dealiasing (vy, k2)

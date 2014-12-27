@@ -3,15 +3,36 @@
 import numpy as np
 import scipy.interpolate as sip
 import matplotlib.pyplot as plt
+import os
+nstep = 9000
+
+if 'info.txt' in [f for f in os.listdir('.') if os.path.isfile(f)]:
+    prefix = os.getcwd() + '/'
+else:
+    prefix = os.getcwd() + '/dat/'
+
+n = 512
+ieout = 100
+def readindata():
+    global n
+    global ieout
+    finfo = open(prefix+'info.txt')
+    info = finfo.readlines()
+    n = int(info[1].split()[1])
+    ieout = int(info[4].split()[5])
+readindata()
 
 plt.close('all')
 
-def plot_vort(numstring):
+def plot_vort():
+    '''numstring is the string form of the number of steps, which
+    should be controlled by the variable step.'''
     ntime = 1000
     startpoint = 100
 
+    step = '{0:0>#6}'.format(nstep)
     filename = prefix + 'vorstat.d'
-    filename1 = prefix + "vortfield" + numstring
+    filename1 = prefix + "vortfield" + step
 
     raw_data = np.loadtxt(filename)
     time = raw_data.transpose()[0]
@@ -25,13 +46,14 @@ def plot_vort(numstring):
     #ax[0].loglog(time, num_of_vort)
     ax[0].set_title("Number of vortex vs time")
     ax[1].matshow(vortfield, cmap=plt.cm.Spectral)
+    f.colorbar(ax[1])
     #ax[1].set_title("Vorticity distribution")
     plt.show()
 
-#L = scatter_plot(zip(time[startpoint:ntime],num_of_vort[startpoint:ntime]))
-#L.show(scale="loglog")
-
-def plot_energy(step):
+def plot_energy():
+    '''step is the string form of the number of the step you want
+    to plot, which is recommended to be controlled by the variable
+    DataHandle.step.'''
     fspec = open("spectrum.d")
     tmp = []
     time = []
@@ -39,7 +61,7 @@ def plot_energy(step):
     spectrum = []
     wavenum = []
     counter = 0
-    istep = int(step) / ieout
+    istep = nstep / ieout
 
     while True:
         dataline = fspec.readline().split()
@@ -68,11 +90,6 @@ def plot_energy(step):
     ax[1].set_title("spectrum")
     plt.show()
 
-prefix = '/home/liu/dat_inverse_512/'
-n = 512
-step = '009000'
-ieout = 100
-
-plot_vort(step)
-plot_energy(step)
+#plot_vort()
+#plot_energy()
 

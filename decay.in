@@ -1,5 +1,5 @@
    'dat/'
-   512		! my
+   1024		! my
    1212		! iseed_m0, seed for random number generator
    0.5		! e0, initinal total energy(new=1) or max vorticity (new=2)
    40.0		! ak0, k_d of initial spectrum(new=1):vortex wavenumber(new=2)
